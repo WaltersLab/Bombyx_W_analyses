@@ -1,0 +1,53 @@
+old_name	length	description	new_name	chromosome_type	notes
+OZ208550.1	20381716	Bombyx mori genome assembly, chromosome: 1			
+OZ208551.1	8294010	Bombyx mori genome assembly, chromosome: 2			
+OZ208552.1	15298324	Bombyx mori genome assembly, chromosome: 3			
+OZ208553.1	18997785	Bombyx mori genome assembly, chromosome: 4			
+OZ208554.1	18850632	Bombyx mori genome assembly, chromosome: 5			
+OZ208555.1	16448204	Bombyx mori genome assembly, chromosome: 6			
+OZ208556.1	13862130	Bombyx mori genome assembly, chromosome: 7			
+OZ208557.1	16113732	Bombyx mori genome assembly, chromosome: 8			
+OZ208558.1	17240222	Bombyx mori genome assembly, chromosome: 9			
+OZ208559.1	18105149	Bombyx mori genome assembly, chromosome: 10			
+OZ208560.1	20600297	Bombyx mori genome assembly, chromosome: 11			
+OZ208561.1	17645870	Bombyx mori genome assembly, chromosome: 12			
+OZ208562.1	17665854	Bombyx mori genome assembly, chromosome: 13			
+OZ208563.1	13721268	Bombyx mori genome assembly, chromosome: 14			
+OZ208564.1	18214088	Bombyx mori genome assembly, chromosome: 15			
+OZ208565.1	14390950	Bombyx mori genome assembly, chromosome: 16			
+OZ208566.1	16733504	Bombyx mori genome assembly, chromosome: 17			
+OZ208567.1	15796136	Bombyx mori genome assembly, chromosome: 18			
+OZ208568.1	14625330	Bombyx mori genome assembly, chromosome: 19			
+OZ208569.1	12386947	Bombyx mori genome assembly, chromosome: 20			
+OZ208570.1	15287298	Bombyx mori genome assembly, chromosome: 21			
+OZ208571.1	18346709	Bombyx mori genome assembly, chromosome: 22			
+OZ208572.1	21286643	Bombyx mori genome assembly, chromosome: 23			
+OZ208573.1	18351742	Bombyx mori genome assembly, chromosome: 24			
+OZ208574.1	14675735	Bombyx mori genome assembly, chromosome: 25			
+OZ208575.1	11769653	Bombyx mori genome assembly, chromosome: 26			
+OZ208576.1	10797784	Bombyx mori genome assembly, chromosome: 27			
+OZ208577.1	10712367	Bombyx mori genome assembly, chromosome: 28			
+OZ208578.1	11646691	Bombyx mori genome assembly, chromosome: 29			
+CAZRSV010000001.1	318421	Bombyx mori genome assembly, contig: sf30, whole genome shotgun sequence			
+CAZRSV010000002.1	236238	Bombyx mori genome assembly, contig: sf31, whole genome shotgun sequence			
+CAZRSV010000003.1	223863	Bombyx mori genome assembly, contig: sf32, whole genome shotgun sequence			
+CAZRSV010000004.1	168101	Bombyx mori genome assembly, contig: sf33, whole genome shotgun sequence			
+CAZRSV010000005.1	160499	Bombyx mori genome assembly, contig: sf34, whole genome shotgun sequence			
+CAZRSV010000006.1	74278	Bombyx mori genome assembly, contig: sf35, whole genome shotgun sequence			
+CAZRSV010000007.1	68035	Bombyx mori genome assembly, contig: sf36, whole genome shotgun sequence			
+CAZRSV010000008.1	64654	Bombyx mori genome assembly, contig: sf37, whole genome shotgun sequence			
+CAZRSV010000009.1	56927	Bombyx mori genome assembly, contig: sf38, whole genome shotgun sequence			
+CAZRSV010000010.1	53312	Bombyx mori genome assembly, contig: sf39, whole genome shotgun sequence			
+CAZRSV010000011.1	42371	Bombyx mori genome assembly, contig: sf40, whole genome shotgun sequence			
+CAZRSV010000012.1	38283	Bombyx mori genome assembly, contig: sf41, whole genome shotgun sequence			
+CAZRSV010000013.1	33466	Bombyx mori genome assembly, contig: sf42, whole genome shotgun sequence			
+CAZRSV010000014.1	31042	Bombyx mori genome assembly, contig: sf43, whole genome shotgun sequence			
+CAZRSV010000015.1	30930	Bombyx mori genome assembly, contig: sf44, whole genome shotgun sequence			
+CAZRSV010000016.1	28545	Bombyx mori genome assembly, contig: sf45, whole genome shotgun sequence			
+CAZRSV010000017.1	26853	Bombyx mori genome assembly, contig: sf46, whole genome shotgun sequence			
+CAZRSV010000018.1	26055	Bombyx mori genome assembly, contig: sf47, whole genome shotgun sequence			
+CAZRSV010000019.1	25645	Bombyx mori genome assembly, contig: sf48, whole genome shotgun sequence			
+CAZRSV010000020.1	24232	Bombyx mori genome assembly, contig: sf49, whole genome shotgun sequence			
+CAZRSV010000021.1	23577	Bombyx mori genome assembly, contig: sf50, whole genome shotgun sequence			
+CAZRSV010000022.1	15995	Bombyx mori genome assembly, contig: sf51, whole genome shotgun sequence			
+CAZRSV010000023.1	15069	Bombyx mori genome assembly, contig: sf52, whole genome shotgun sequence			
