@@ -1,0 +1,54 @@
+old_name	length	description	new_name	chromosome_type	notes
+OZ208521.1	20279246	"Bombyx mori genome assembly, chromosome: 1"	ChrZ		
+OZ208522.1	8539671	"Bombyx mori genome assembly, chromosome: 2"	Chr02		
+OZ208523.1	15373533	"Bombyx mori genome assembly, chromosome: 3"	Chr03		
+OZ208524.1	18742546	"Bombyx mori genome assembly, chromosome: 4"	Chr04		
+OZ208525.1	18900365	"Bombyx mori genome assembly, chromosome: 5"	Chr05		
+OZ208526.1	16613929	"Bombyx mori genome assembly, chromosome: 6"	Chr06		
+OZ208527.1	14010148	"Bombyx mori genome assembly, chromosome: 7"	Chr07		
+OZ208528.1	16067945	"Bombyx mori genome assembly, chromosome: 8"	Chr08		
+OZ208529.1	17001590	"Bombyx mori genome assembly, chromosome: 9"	Chr09		
+OZ208530.1	19026792	"Bombyx mori genome assembly, chromosome: 10"	Chr10		
+OZ208531.1	20775672	"Bombyx mori genome assembly, chromosome: 11"	Chr11		
+OZ208532.1	17295065	"Bombyx mori genome assembly, chromosome: 12"	Chr12		
+OZ208533.1	17995780	"Bombyx mori genome assembly, chromosome: 13"	Chr13		
+OZ208534.1	13532161	"Bombyx mori genome assembly, chromosome: 14"	Chr14		
+OZ208535.1	18546443	"Bombyx mori genome assembly, chromosome: 15"	Chr15		
+OZ208536.1	14941124	"Bombyx mori genome assembly, chromosome: 16"	Chr16		
+OZ208537.1	16721648	"Bombyx mori genome assembly, chromosome: 17"	Chr17		
+OZ208538.1	15810381	"Bombyx mori genome assembly, chromosome: 18"	Chr18		
+OZ208539.1	14533077	"Bombyx mori genome assembly, chromosome: 19"	Chr19		
+OZ208540.1	12493630	"Bombyx mori genome assembly, chromosome: 20"	Chr20		
+OZ208541.1	15223977	"Bombyx mori genome assembly, chromosome: 21"	Chr21		
+OZ208542.1	18144529	"Bombyx mori genome assembly, chromosome: 22"	Chr22		
+OZ208543.1	21419265	"Bombyx mori genome assembly, chromosome: 23"	Chr23		
+OZ208544.1	19051533	"Bombyx mori genome assembly, chromosome: 24"	Chr24		
+OZ208545.1	14756915	"Bombyx mori genome assembly, chromosome: 25"	Chr25		
+OZ208546.1	11876347	"Bombyx mori genome assembly, chromosome: 26"	Chr26		
+OZ208547.1	10765832	"Bombyx mori genome assembly, chromosome: 27"	Chr27		
+OZ208548.1	10697693	"Bombyx mori genome assembly, chromosome: 28"	Chr28		
+OZ208549.1	11111883	"Bombyx mori genome assembly, chromosome: 29"	ChrW		
+CAZRSS010000001.1	454572	"Bombyx mori genome assembly, contig: sf30, whole genome shotgun sequence"	CAZRSS010000001.1		
+CAZRSS010000002.1	271530	"Bombyx mori genome assembly, contig: sf31, whole genome shotgun sequence"	CAZRSS010000002.1		
+CAZRSS010000003.1	121046	"Bombyx mori genome assembly, contig: sf32, whole genome shotgun sequence"	CAZRSS010000003.1		
+CAZRSS010000004.1	104495	"Bombyx mori genome assembly, contig: sf33, whole genome shotgun sequence"	CAZRSS010000004.1		
+CAZRSS010000005.1	100753	"Bombyx mori genome assembly, contig: sf34, whole genome shotgun sequence"	CAZRSS010000005.1		
+CAZRSS010000006.1	82355	"Bombyx mori genome assembly, contig: sf35, whole genome shotgun sequence"	CAZRSS010000006.1		
+CAZRSS010000007.1	71994	"Bombyx mori genome assembly, contig: sf36, whole genome shotgun sequence"	CAZRSS010000007.1		
+CAZRSS010000008.1	61000	"Bombyx mori genome assembly, contig: sf37, whole genome shotgun sequence"	CAZRSS010000008.1		
+CAZRSS010000009.1	49545	"Bombyx mori genome assembly, contig: sf38, whole genome shotgun sequence"	CAZRSS010000009.1		
+CAZRSS010000010.1	46712	"Bombyx mori genome assembly, contig: sf39, whole genome shotgun sequence"	CAZRSS010000010.1		
+CAZRSS010000011.1	44126	"Bombyx mori genome assembly, contig: sf40, whole genome shotgun sequence"	CAZRSS010000011.1		
+CAZRSS010000012.1	43438	"Bombyx mori genome assembly, contig: sf41, whole genome shotgun sequence"	CAZRSS010000012.1		
+CAZRSS010000013.1	35763	"Bombyx mori genome assembly, contig: sf42, whole genome shotgun sequence"	CAZRSS010000013.1		
+CAZRSS010000014.1	27131	"Bombyx mori genome assembly, contig: sf43, whole genome shotgun sequence"	CAZRSS010000014.1		
+CAZRSS010000015.1	26698	"Bombyx mori genome assembly, contig: sf44, whole genome shotgun sequence"	CAZRSS010000015.1		
+CAZRSS010000016.1	22593	"Bombyx mori genome assembly, contig: sf45, whole genome shotgun sequence"	CAZRSS010000016.1		
+CAZRSS010000017.1	22375	"Bombyx mori genome assembly, contig: sf46, whole genome shotgun sequence"	CAZRSS010000017.1		
+CAZRSS010000018.1	19418	"Bombyx mori genome assembly, contig: sf47, whole genome shotgun sequence"	CAZRSS010000018.1		
+CAZRSS010000019.1	16630	"Bombyx mori genome assembly, contig: sf48, whole genome shotgun sequence"	CAZRSS010000019.1		
+CAZRSS010000020.1	10000	"Bombyx mori genome assembly, contig: sf49, whole genome shotgun sequence"	CAZRSS010000020.1		
+CAZRSS010000021.1	5000	"Bombyx mori genome assembly, contig: sf50, whole genome shotgun sequence"	CAZRSS010000021.1		
+CAZRSS010000022.1	10000	"Bombyx mori genome assembly, contig: sf51, whole genome shotgun sequence"	CAZRSS010000022.1		
+CAZRSS010000023.1	15000	"Bombyx mori genome assembly, contig: sf52, whole genome shotgun sequence"	CAZRSS010000023.1		
+CAZRSS010000024.1	10000	"Bombyx mori genome assembly, contig: sf53, whole genome shotgun sequence"	CAZRSS010000024.1		
