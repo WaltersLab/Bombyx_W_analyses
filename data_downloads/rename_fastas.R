@@ -31,4 +31,8 @@ getChroms <- function(asm) {
                   compress = "gzip")
 }
 
-getChroms(asm = basenames[1])
+# getChroms(asm = basenames[1])
+
+for (i in basenames) {
+  getChroms(asm = i)
+}
