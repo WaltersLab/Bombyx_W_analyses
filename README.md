@@ -2,7 +2,7 @@
 Data, code, and results relating to the analysis of the Bombyx W chromosome
 
 ## Script Order
-
+### Working in `data_downloads`
 1. `download_assemblies.sh` retrieves assemblies from databases into `raw_downloads`
 2. `index_assemblies.sh` recompresses with bgzip and indexes them with samtools in `renamed_fasta`
 3. `tabulate_scaffolds.sh` reads fasta indexes and tabulates in tsv files in `rename_maps`
