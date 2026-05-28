@@ -2,6 +2,6 @@
 */*.fna.gz
 
 # indexed genomes
-indexed/*.bgz
-indexed/*.fai
-indexed/*.gzi
+*/*.bgz
+*/*.fai
+*/*.gzi
