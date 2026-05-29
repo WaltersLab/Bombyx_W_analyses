@@ -1,7 +1,7 @@
-*/*.fas.gz
-*/*.fna.gz
+*.fas.gz
+*.fna.gz
 
 # indexed genomes
-*/*.bgz
-*/*.fai
-*/*.gzi
+*.bgz
+*.fai
+*.gzi
