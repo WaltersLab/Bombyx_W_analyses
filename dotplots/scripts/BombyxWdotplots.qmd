@@ -1,0 +1,121 @@
+---
+title: "Bombyx alignments"
+author: "James R. Walters"
+format: html
+editor: source
+theme: sandstone
+toc: true
+embed-resources: true
+number-sections: true
+---
+
+# Libraries
+```{r}
+library(pafr, quietly = TRUE)
+library(patchwork)
+```
+
+
+# Read Data
+
+## Read PAFs
+
+```{r}
+pafdirW <- "../../alignments/W/"
+pafdirZA <- "../../alignments/ZA/"
+
+alnWfiles <- dir(pafdirW)
+alnZAfiles <- dir(pafdirZA)
+```
+
+Clean up labels
+
+```{r}
+alnLabels <- gsub(pattern = "(\\S+?)_.*_vs_(\\S+?)_.*", 
+                  replacement = "\\1_vs_\\2",
+                  x = alnWfiles)
+qryLabels <- gsub(pattern = "(\\S+?)_.*_vs_(\\S+?)_.*", 
+                  replacement = "\\1",
+                  x = alnWfiles)
+
+names(alnWfiles) <- qryLabels
+names(alnZAfiles) <- qryLabels
+
+```
+
+
+Import pafs
+
+```{r}
+pafsW <- lapply(alnWfiles, function(x) {read_paf(file_name = paste0(pafdirW,x)) })
+pafsZA <- lapply(alnZAfiles, function(x) {read_paf(file_name = paste0(pafdirZA,x)) })
+```
+
+
+## Chrom order reference
+Need this for specifying order of chroms in `pafr` dotplots.
+```{r}
+chroms <- readLines("../../config/autosomes_Z.txt")
+```
+
+# Plot
+
+## Plot W
+
+```{r}
+dotplotW <- list()
+for (i in seq_along(pafsW)) {
+  dotplotW[[i]] <- dotplot(ali = pafsW[[i]], 
+                           line_size = 0.5,
+                           ylab = "p50T",
+                           xlab = qryLabels[i],
+                           alignment_colour = "blue3") + 
+    theme_classic()
+}
+```
+
+## Plot Z & Autosomes
+
+```{r,fig.height=15, fig.width=10}
+dotplotW[[1]] + dotplotW[[2]] + dotplotW[[3]] + dotplotW[[4]] + dotplotW[[5]] +
+   plot_layout(ncol = 2) +
+   plot_annotation(title = "W chromosome")
+  
+```
+
+
+```{r}
+dotplotZA <- list()
+for (i in seq_along(pafsZA)) {
+  dotplotZA[[i]] <- dotplot(ali = pafsZA[[i]], 
+                           line_size = 0.5,
+                           ylab = "p50T",
+                           order_by = "provided", 
+                           ordering = list(chroms,chroms),
+                           xlab = qryLabels[i],
+                           alignment_colour = "green4") + 
+    theme_classic()
+}
+```
+
+
+
+```{r, fig.height=15, fig.width=10}
+dotplotZA[[1]] + dotplotZA[[2]] + dotplotZA[[3]] + dotplotZA[[4]] + dotplotZA[[5]] +
+   plot_layout(ncol = 2, axes = "collect") +
+   plot_annotation(title = "Z & Autosomes")
+  
+```
+
+<!-- ```{r} -->
+<!-- KAw <- read_paf(paste0(pafdirW, alnWfiles[1])) -->
+<!-- KAza <- read_paf(paste0(pafdirZA, alnZAfiles[1]))  -->
+<!-- ``` -->
+
+
+<!-- ```{r, fig.height=10, fig.width=10} -->
+<!-- dotplot(ali = KAw) -->
+
+<!-- dotplot(KAza, label_seqs=TRUE, order_by = "provided", ordering = list(chroms,chroms), line_size = 1) + theme_classic() -->
+<!-- ``` -->
+
