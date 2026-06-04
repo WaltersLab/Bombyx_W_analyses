@@ -24,8 +24,10 @@ library(patchwork)
 pafdirW <- "../../alignments/W/"
 pafdirZA <- "../../alignments/ZA/"
 
-alnWfiles <- dir(pafdirW)
-alnZAfiles <- dir(pafdirZA)
+alnWfiles_asm5 <- dir(pafdirW, pattern = "asm5")
+alnWfiles_asm20 <- dir(pafdirW, pattern = "asm20")
+alnZAfiles_asm5 <- dir(pafdirZA, pattern = "asm5")
+alnZAfiles_asm20 <- dir(pafdirZA, pattern = "asm20")
 ```
 
 Clean up labels
@@ -33,13 +35,17 @@ Clean up labels
 ```{r}
 alnLabels <- gsub(pattern = "(\\S+?)_.*_vs_(\\S+?)_.*", 
                   replacement = "\\1_vs_\\2",
-                  x = alnWfiles)
+                  x = alnWfiles_asm5)
 qryLabels <- gsub(pattern = "(\\S+?)_.*_vs_(\\S+?)_.*", 
                   replacement = "\\1",
-                  x = alnWfiles)
+                  x = alnWfiles_asm5)
 
-names(alnWfiles) <- qryLabels
-names(alnZAfiles) <- qryLabels
+names(alnWfiles_asm5) <- qryLabels
+names(alnWfiles_asm20) <- qryLabels
+
+names(alnZAfiles_asm5) <- qryLabels
+names(alnZAfiles_asm20) <- qryLabels
+
 
 ```
 
@@ -47,8 +53,10 @@ names(alnZAfiles) <- qryLabels
 Import pafs
 
 ```{r}
-pafsW <- lapply(alnWfiles, function(x) {read_paf(file_name = paste0(pafdirW,x)) })
-pafsZA <- lapply(alnZAfiles, function(x) {read_paf(file_name = paste0(pafdirZA,x)) })
+pafsWasm5 <- lapply(alnWfiles_asm5, function(x) {read_paf(file_name = paste0(pafdirW,x)) })
+pafsWasm20 <- lapply(alnWfiles_asm20, function(x) {read_paf(file_name = paste0(pafdirW,x)) })
+pafsZAasm5 <- lapply(alnZAfiles_asm5, function(x) {read_paf(file_name = paste0(pafdirZA,x)) })
+pafsZAasm20 <- lapply(alnZAfiles_asm20, function(x) {read_paf(file_name = paste0(pafdirZA,x)) })
 ```
 
 
@@ -62,10 +70,11 @@ chroms <- readLines("../../config/autosomes_Z.txt")
 
 ## Plot W
 
+Generate W plots for `asm5`.
 ```{r}
-dotplotW <- list()
-for (i in seq_along(pafsW)) {
-  dotplotW[[i]] <- dotplot(ali = pafsW[[i]], 
+dotplotWasm5 <- list()
+for (i in seq_along(pafsWasm5)) {
+  dotplotWasm5[[i]] <- dotplot(ali = pafsWasm5[[i]], 
                            line_size = 0.5,
                            ylab = "p50T",
                            xlab = qryLabels[i],
@@ -74,20 +83,42 @@ for (i in seq_along(pafsW)) {
 }
 ```
 
-## Plot Z & Autosomes
+
 
 ```{r,fig.height=15, fig.width=10}
-dotplotW[[1]] + dotplotW[[2]] + dotplotW[[3]] + dotplotW[[4]] + dotplotW[[5]] +
-   plot_layout(ncol = 2) +
-   plot_annotation(title = "W chromosome")
+wrap_plots(dotplotWasm5) + 
+  plot_layout(ncol = 2) +
+  plot_annotation(title = "W chromosome, asm5")
   
 ```
 
+Generate W plots for `asm20`.
+```{r}
+dotplotWasm20 <- list()
+for (i in seq_along(pafsWasm20)) {
+  dotplotWasm20[[i]] <- dotplot(ali = pafsWasm20[[i]], 
+                           line_size = 0.5,
+                           ylab = "p50T",
+                           xlab = qryLabels[i],
+                           alignment_colour = "blue3") + 
+    # coord_flip() + # could swap axes to have reference on X axis
+    theme_classic()
+}
+```
+
+
+```{r,fig.height=15, fig.width=10}
+wrap_plots(dotplotWasm20) + 
+  plot_layout(ncol = 2) +
+  plot_annotation(title = "W chromosome, asm20")
+  
+```
+## Plot Z & Autosomes
 
 ```{r}
-dotplotZA <- list()
-for (i in seq_along(pafsZA)) {
-  dotplotZA[[i]] <- dotplot(ali = pafsZA[[i]], 
+dotplotZAasm5 <- list()
+for (i in seq_along(pafsZAasm5)) {
+  dotplotZAasm5[[i]] <- dotplot(ali = pafsZAasm5[[i]], 
                            line_size = 0.5,
                            ylab = "p50T",
                            order_by = "provided", 
@@ -101,11 +132,39 @@ for (i in seq_along(pafsZA)) {
 
 
 ```{r, fig.height=15, fig.width=10}
-dotplotZA[[1]] + dotplotZA[[2]] + dotplotZA[[3]] + dotplotZA[[4]] + dotplotZA[[5]] +
-   plot_layout(ncol = 2, axes = "collect") +
-   plot_annotation(title = "Z & Autosomes")
+wrap_plots(dotplotZAasm5) + 
+  plot_layout(ncol = 2) +
+  plot_annotation(title = "Z & autosomes, asm5")
   
 ```
+
+
+
+
+```{r}
+dotplotZAasm20 <- list()
+for (i in seq_along(pafsZAasm20)) {
+  dotplotZAasm20[[i]] <- dotplot(ali = pafsZAasm20[[i]], 
+                           line_size = 0.5,
+                           ylab = "p50T",
+                           order_by = "provided", 
+                           ordering = list(chroms,chroms),
+                           xlab = qryLabels[i],
+                           alignment_colour = "green4") + 
+    theme_classic()
+}
+```
+
+
+
+
+```{r, fig.height=15, fig.width=10}
+wrap_plots(dotplotZAasm20) + 
+  plot_layout(ncol = 2) +
+  plot_annotation(title = "Z & autosomes, asm20")
+  
+```
+
 
 <!-- ```{r} -->
 <!-- KAw <- read_paf(paste0(pafdirW, alnWfiles[1])) -->
