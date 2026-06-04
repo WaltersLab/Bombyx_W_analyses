@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --job-name=mm2_Wasm5
+#SBATCH --job-name=mm2_Wdef
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=16G
 #SBATCH --time=12:00:00
-#SBATCH --output=logs/mm2_W_%A_%a_asm5.out
-#SBATCH --error=logs/mm2_W_%A_%a_asm5.err
+#SBATCH --output=logs/mm2_W_%A_%a_asmDefault.out
+#SBATCH --error=logs/mm2_W_%A_%a_asmDefault.err
 
 set -euo pipefail
 
@@ -20,7 +20,7 @@ query=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$QUERY_LIST")
 
 ref="${FASTA_DIR}/${REF_ID}_W.fas.gz"
 qry="${FASTA_DIR}/${query}_W.fas.gz"
-out="${OUT_DIR}/${query}_vs_${REF_ID}_W.asm5.paf"
+out="${OUT_DIR}/${query}_vs_${REF_ID}_W.default.paf"
 
 echo "Reference: $ref"
 echo "Query:     $qry"
