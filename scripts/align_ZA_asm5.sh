@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --job-name=mm2_ZA
+#SBATCH --job-name=mm2_ZAasm5
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32G
 #SBATCH --time=12:00:00
-#SBATCH --output=logs/mm2_ZA_%A_%a.out
-#SBATCH --error=logs/mm2_ZA_%A_%a.err
+#SBATCH --output=logs/mm2_ZA_%A_%a_asm5.out
+#SBATCH --error=logs/mm2_ZA_%A_%a_asm5.err
 
 set -euo pipefail
 
