@@ -26,6 +26,7 @@ pafdirZA <- "../../alignments/ZA/"
 
 alnWfiles_asm5 <- dir(pafdirW, pattern = "asm5")
 alnWfiles_asm20 <- dir(pafdirW, pattern = "asm20")
+alnWfiles_def  <- dir(pafdirW, pattern = "default")
 alnZAfiles_asm5 <- dir(pafdirZA, pattern = "asm5")
 alnZAfiles_asm20 <- dir(pafdirZA, pattern = "asm20")
 ```
@@ -42,6 +43,7 @@ qryLabels <- gsub(pattern = "(\\S+?)_.*_vs_(\\S+?)_.*",
 
 names(alnWfiles_asm5) <- qryLabels
 names(alnWfiles_asm20) <- qryLabels
+names(alnWfiles_def) <- qryLabels
 
 names(alnZAfiles_asm5) <- qryLabels
 names(alnZAfiles_asm20) <- qryLabels
@@ -55,6 +57,7 @@ Import pafs
 ```{r}
 pafsWasm5 <- lapply(alnWfiles_asm5, function(x) {read_paf(file_name = paste0(pafdirW,x)) })
 pafsWasm20 <- lapply(alnWfiles_asm20, function(x) {read_paf(file_name = paste0(pafdirW,x)) })
+pafsWdef <- lapply(alnWfiles_def, function(x) {read_paf(file_name = paste0(pafdirW,x)) })
 pafsZAasm5 <- lapply(alnZAfiles_asm5, function(x) {read_paf(file_name = paste0(pafdirZA,x)) })
 pafsZAasm20 <- lapply(alnZAfiles_asm20, function(x) {read_paf(file_name = paste0(pafdirZA,x)) })
 ```
@@ -70,7 +73,7 @@ chroms <- readLines("../../config/autosomes_Z.txt")
 
 ## Plot W
 
-Generate W plots for `asm5`.
+### Generate W plots for `asm5`
 ```{r}
 dotplotWasm5 <- list()
 for (i in seq_along(pafsWasm5)) {
@@ -79,6 +82,7 @@ for (i in seq_along(pafsWasm5)) {
                            ylab = "p50T",
                            xlab = qryLabels[i],
                            alignment_colour = "blue3") + 
+    coord_flip() + # could swap axes to have reference on X axis
     theme_classic()
 }
 ```
@@ -92,7 +96,7 @@ wrap_plots(dotplotWasm5) +
   
 ```
 
-Generate W plots for `asm20`.
+### Generate W plots for `asm20`
 ```{r}
 dotplotWasm20 <- list()
 for (i in seq_along(pafsWasm20)) {
@@ -101,7 +105,7 @@ for (i in seq_along(pafsWasm20)) {
                            ylab = "p50T",
                            xlab = qryLabels[i],
                            alignment_colour = "blue3") + 
-    # coord_flip() + # could swap axes to have reference on X axis
+    coord_flip() + # could swap axes to have reference on X axis
     theme_classic()
 }
 ```
@@ -113,6 +117,30 @@ wrap_plots(dotplotWasm20) +
   plot_annotation(title = "W chromosome, asm20")
   
 ```
+### Generate W plots for `default`
+
+```{r}
+dotplotWdef <- list()
+for (i in seq_along(pafsWdef)) {
+  dotplotWdef[[i]] <- dotplot(ali = pafsWdef[[i]], 
+                           line_size = 0.5,
+                           ylab = "p50T",
+                           xlab = qryLabels[i],
+                           alignment_colour = "blue3") + 
+    coord_flip() + # could swap axes to have reference on X axis
+    theme_classic()
+}
+```
+
+
+
+```{r,fig.height=15, fig.width=10}
+wrap_plots(dotplotWdef) + 
+  plot_layout(ncol = 2) +
+  plot_annotation(title = "W chromosome, default")
+  
+```
+
 ## Plot Z & Autosomes
 
 ```{r}
@@ -125,6 +153,7 @@ for (i in seq_along(pafsZAasm5)) {
                            ordering = list(chroms,chroms),
                            xlab = qryLabels[i],
                            alignment_colour = "green4") + 
+    coord_flip() + # could swap axes to have reference on X axis
     theme_classic()
 }
 ```
@@ -151,6 +180,7 @@ for (i in seq_along(pafsZAasm20)) {
                            ordering = list(chroms,chroms),
                            xlab = qryLabels[i],
                            alignment_colour = "green4") + 
+    coord_flip() + # could swap axes to have reference on X axis
     theme_classic()
 }
 ```
