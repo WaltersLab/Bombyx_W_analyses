@@ -24,14 +24,15 @@ library(patchwork)
 pafdirW <- "../../alignments/W/"
 pafdirZA <- "../../alignments/ZA/"
 
-alnWfiles_asm5 <- dir(pafdirW, pattern = "asm5")
-alnWfiles_asm20 <- dir(pafdirW, pattern = "asm20")
-alnWfiles_def  <- dir(pafdirW, pattern = "default")
-alnZAfiles_asm5 <- dir(pafdirZA, pattern = "asm5")
+alnWfiles_asm5   <- dir(pafdirW, pattern = "asm5")
+alnWfiles_asm20  <- dir(pafdirW, pattern = "asm20")
+alnWfiles_def    <- dir(pafdirW, pattern = "default")
+alnZAfiles_asm5  <- dir(pafdirZA, pattern = "asm5")
 alnZAfiles_asm20 <- dir(pafdirZA, pattern = "asm20")
+alnZAfiles_def   <- dir(pafdirZA, pattern = "default")
 ```
 
-Clean up labels
+### Clean up labels
 
 ```{r}
 alnLabels <- gsub(pattern = "(\\S+?)_.*_vs_(\\S+?)_.*", 
@@ -40,6 +41,7 @@ alnLabels <- gsub(pattern = "(\\S+?)_.*_vs_(\\S+?)_.*",
 qryLabels <- gsub(pattern = "(\\S+?)_.*_vs_(\\S+?)_.*", 
                   replacement = "\\1",
                   x = alnWfiles_asm5)
+qryLabels[qryLabels == "p50han"] <- "p50"
 
 names(alnWfiles_asm5) <- qryLabels
 names(alnWfiles_asm20) <- qryLabels
@@ -47,19 +49,28 @@ names(alnWfiles_def) <- qryLabels
 
 names(alnZAfiles_asm5) <- qryLabels
 names(alnZAfiles_asm20) <- qryLabels
+names(alnZAfiles_def) <- qryLabels
 
 
 ```
 
 
-Import pafs
+### Import pafs
 
 ```{r}
-pafsWasm5 <- lapply(alnWfiles_asm5, function(x) {read_paf(file_name = paste0(pafdirW,x)) })
-pafsWasm20 <- lapply(alnWfiles_asm20, function(x) {read_paf(file_name = paste0(pafdirW,x)) })
-pafsWdef <- lapply(alnWfiles_def, function(x) {read_paf(file_name = paste0(pafdirW,x)) })
-pafsZAasm5 <- lapply(alnZAfiles_asm5, function(x) {read_paf(file_name = paste0(pafdirZA,x)) })
-pafsZAasm20 <- lapply(alnZAfiles_asm20, function(x) {read_paf(file_name = paste0(pafdirZA,x)) })
+pafsWasm5   <- lapply(alnWfiles_asm5, function(x) {
+  read_paf(file_name = paste0(pafdirW,x)) })
+pafsWasm20  <- lapply(alnWfiles_asm20, function(x) {
+  read_paf(file_name = paste0(pafdirW,x)) })
+pafsWdef    <- lapply(alnWfiles_def, function(x) {
+  read_paf(file_name = paste0(pafdirW,x)) })
+pafsZAasm5  <- lapply(alnZAfiles_asm5, function(x) {
+  read_paf(file_name = paste0(pafdirZA,x)) })
+pafsZAasm20 <- lapply(alnZAfiles_asm20, function(x) {
+  read_paf(file_name = paste0(pafdirZA,x)) })
+pafsZAdef   <- lapply(alnZAfiles_def, function(x) {
+  read_paf(file_name = paste0(pafdirZA,x)) })
+
 ```
 
 
@@ -141,7 +152,19 @@ wrap_plots(dotplotWdef) +
   
 ```
 
+Write plot to external file.
+
+```{r}
+outW_pafr <- wrap_plots(dotplotWdef) + 
+  plot_layout(ncol = 3) 
+ggsave(filename = "../results/Wpafr_default.jpg", plot = outW_pafr,
+       width = 180, height = 90, units = "mm", scale = 1.7)
+```
+
+
 ## Plot Z & Autosomes
+
+### Generate ZA plots for `asm5`
 
 ```{r}
 dotplotZAasm5 <- list()
@@ -168,7 +191,7 @@ wrap_plots(dotplotZAasm5) +
 ```
 
 
-
+### Generate ZA plots for `asm20`
 
 ```{r}
 dotplotZAasm20 <- list()
@@ -195,6 +218,80 @@ wrap_plots(dotplotZAasm20) +
   
 ```
 
+
+### Generate ZA plots for `default`
+
+
+```{r}
+dotplotZAdef <- list()
+for (i in seq_along(pafsZAdef)) {
+  dotplotZAdef[[i]] <- dotplot(ali = pafsZAdef[[i]], 
+                           line_size = 0.5,
+                           ylab = "p50T",
+                           order_by = "provided", 
+                           ordering = list(chroms,chroms),
+                           xlab = qryLabels[i],
+                           alignment_colour = "green4") + 
+    coord_flip() + # could swap axes to have reference on X axis
+    theme_classic()
+}
+```
+
+
+
+
+```{r, fig.height=15, fig.width=10}
+wrap_plots(dotplotZAdef) + 
+  plot_layout(ncol = 2) +
+  plot_annotation(title = "Z & autosomes, default")
+  
+```
+
+
+
+
+
+Write plot to external file.
+
+```{r}
+outZA_pafr <- wrap_plots(dotplotZAdef) + 
+  plot_layout(ncol = 2) 
+ggsave(filename = "../results/ZApafr_default.jpg", plot = outZA_pafr,
+       width = 180, height = 270, units = "mm", scale = 1.7)
+```
+
+
+## Single Chromosome
+
+
+
+```{r}
+
+chromNow <- "ChrZ"
+dotplotChrom <- list()
+for (i in seq_along(pafsZAasm20)) {
+  chrAli <- subset(pafsZAasm20[[i]], qname == chromNow & tname == chromNow, ) 
+  dotplotChrom[[i]] <- dotplot(ali = chrAli, 
+                           line_size = 0.5,
+                           ylab = "p50T",
+                           #order_by = "provided", 
+                           #ordering = list(chroms,chroms),
+                           xlab = qryLabels[i],
+                           alignment_colour = "green4") + 
+    coord_flip() + # could swap axes to have reference on X axis
+    theme_classic()
+}
+```
+
+
+
+
+```{r, fig.height=15, fig.width=10}
+wrap_plots(dotplotChrom) + 
+  plot_layout(ncol = 2) +
+  plot_annotation(title = chromNow)
+  
+```
 
 <!-- ```{r} -->
 <!-- KAw <- read_paf(paste0(pafdirW, alnWfiles[1])) -->
