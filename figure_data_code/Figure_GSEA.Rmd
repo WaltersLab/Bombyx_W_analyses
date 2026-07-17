@@ -1,0 +1,51 @@
+---
+title: "GSEA figure"
+output: html_document
+date: "2026-07-15"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+setwd("D:/work/Bmori/manuscript/Figures")
+library(tidyverse)
+library(ComplexUpset)
+
+```
+
+```{r fig5}
+plot_df <- read_tsv("./Input_files/Repeat_GSEA.tsv") %>%
+    mutate(pathway = reorder(pathway, NES))
+
+plot_df %>% ggplot() +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey60") +
+  geom_point(aes(x= NES, y= pathway, size = leading_no, fill = Significant), color="black", pch = 21) +
+  scale_fill_manual(values=c("darkorange", "darkblue"))+  
+  labs(x = "Normalized Enrichment Score", y = NULL, title = "", size = "Leading Edges", fill = "padj < 0.05") +
+  theme_cowplot(12) +
+  background_grid(major = "y", minor = "none") +
+  theme(legend.position = "bottom") +
+  guides(fill = guide_legend(nrow = 3, byrow = TRUE, title.position = "top"), size = guide_legend(nrow = 4, byrow = TRUE, title.position = "top"))
+
+fig5 <- plot_df %>% ggplot() +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "grey60") +
+  geom_point(aes(x= NES, y= pathway, size = leading_no, fill = Significant), color="black", pch = 21) +
+  scale_fill_manual(values=c("darkorange", "darkblue"))+  
+  labs(x = "Normalized Enrichment Score", y = NULL, title = "", size = "Leading Edges", fill = "padj < 0.05") +
+  theme_cowplot(12) +
+  background_grid(major = "y", minor = "none") +
+  theme(legend.position = "bottom") +
+  guides(fill = guide_legend(nrow = 3, byrow = TRUE, title.position = "top"), size = guide_legend(nrow = 4, byrow = TRUE, title.position = "top"))
+
+  ggsave(
+  "Fig5.tiff",
+  plot   =fig5,
+  device = ragg::agg_tiff,
+  width  = 85, height = 90, units = "mm",
+  res    = 300,
+  compression = "lzw",
+  bg = "white"
+)
+  
+
+```

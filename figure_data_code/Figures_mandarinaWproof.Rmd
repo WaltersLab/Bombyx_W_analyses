@@ -1,0 +1,131 @@
+---
+title: "p50ma W origin"
+output: html_document
+date: "2026-07-05"
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+#setwd("D:/work/Bmori/manuscript/Figures")
+library (tidyverse)
+library (adegenet)
+library (ape)
+library (ragg)
+```
+
+# W markers 
+```{r markers}
+markers <- read_tsv("./Input_files/Wmarkers_assemblies_selected.tsv")
+
+
+# markers %>% ggplot() +
+#   geom_point(aes(x=strain, y=align_len), size = 2) +
+#   facet_wrap(~name, ncol = 1) +
+#   ylim (600, 1400) +
+#   xlab("Silkworm Strain") + ylab("Alignment Length (bp)") +
+#   theme_light(12)
+
+fig2 <- markers %>% ggplot() +
+  geom_point(aes(x=strain, y=align_len), size = 2) +
+  facet_wrap(~name, ncol = 1) +
+  ylim (600, 1400) +
+  xlab("Silkworm Strain") + ylab("Alignment Length (bp)") +
+  theme_light(12)
+
+print(fig2)
+```
+
+
+```{r}
+ggsave(
+  "Fig2.tiff",
+  plot   =fig2,
+  device = ragg::agg_tiff,
+  width  = 85, height = 90, units = "mm",
+  res    = 300,
+  compression = "lzw" 
+)
+
+
+ggsave(
+  "Fig2.png",
+  plot   = fig2,
+  device = ragg::agg_png,
+  width  = 85, height = 90, units = "mm",
+  res    = 300,
+  #compression = "lzw" 
+)
+```
+\
+
+# Mitochondrial DNA
+
+```{r mtDNA}
+tbl <- read_tsv("./Input_files/Bombyx_mit_accno_species.tsv", col_names = c("Acc", "Taxon"))
+
+
+alignment <- read.dna("./Input_files/Bombyx_mt_all_align_Gblock.fasta", format = "fasta")
+
+alignment <- DNAbin2genind(alignment)
+
+matrix <- tab (alignment, freq = FALSE, NA.method = "mean")
+rownames(matrix) <- gsub(" .+", "", rownames(matrix))
+
+
+pca_res <- prcomp(matrix, center = TRUE, scale. = TRUE)
+
+pca_df <- data.frame(pca_res$x[,1:2])
+pca_df$Acc <- rownames(pca_df)
+pca_df <- pca_df %>%
+  merge(tbl, by="Acc")
+
+pca_df <- pca_df %>%
+  mutate(Taxon=fct_relevel(as.factor(Taxon), "mandarina", "mori", "p50ma", "p50T")) %>%
+  arrange (Taxon != "p50T")
+
+
+# pca_df %>% 
+# ggplot(aes(x = PC1, y = PC2, color = Taxon)) +
+#   geom_point(size = 1.5, alpha =0.7) +
+#   geom_point(data = subset(pca_df, Taxon == "p50T"), size = 1.5, alpha = 1) +
+#   xlab(paste0("PC1 (", round(summary(pca_res)$importance[2,1]*100, 1), "%)")) +
+#   ylab(paste0("PC2 (", round(summary(pca_res)$importance[2,2]*100, 1), "%)")) +
+#   theme_light(12) +
+#   theme(legend.text = element_text(face="italic"), legend.title = element_blank()) +
+#   scale_color_manual(values = c( "#AA4499", "#6699CC", "#117733", "black"))
+
+fig3 <- pca_df%>% 
+ggplot(aes(x = PC1, y = PC2, color = Taxon)) +
+  geom_point(size = 1.5, alpha =0.7) +
+  geom_point(data = subset(pca_df, Taxon == "p50T"), size = 1.5, alpha = 1) +
+  xlab(paste0("PC1 (", round(summary(pca_res)$importance[2,1]*100, 1), "%)")) +
+  ylab(paste0("PC2 (", round(summary(pca_res)$importance[2,2]*100, 1), "%)")) +
+  theme_light(12) +
+  theme(legend.text = element_text(face="italic"), legend.title = element_blank()) +
+  scale_color_manual(values = c( "#AA4499", "#6699CC", "#117733", "black"))
+
+print(fig3)
+
+```
+
+```{r}
+
+ggsave(
+  "Fig3.tiff",
+  plot   = fig3,
+  device = ragg::agg_tiff,
+  width  = 85, height = 65, units = "mm",
+  res    = 300,
+  compression = "lzw" 
+)
+
+
+ggsave(
+  "Fig3.png",
+  plot   = fig3,
+  device = ragg::agg_png,
+  width  = 85, height = 65, units = "mm",
+  res    = 300
+  #compression = "lzw" 
+)
+```
+

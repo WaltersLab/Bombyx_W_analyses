@@ -1,0 +1,320 @@
+---
+title: "Bombyx mori and mandarina repeats on sex chromosomes"
+output: html_document
+date: "2026-07-14"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+#setwd("D:/work/Bmori/manuscript/Figures")
+library(tidyverse)
+library(ComplexUpset)
+library (cowplot)
+library (ragg)
+
+```
+
+
+```{r colors}
+Repeat_colors <- c(
+  Satellite = "#88CCEE",
+  Helitron= "#117733",
+  DNA = "#332288",
+  SINE = "#AA4499",
+  LINE = "#999933",
+  Penelope = "#6699CC",
+  LTR =  "#661100",
+  Unknown = "#888888"
+)
+```
+
+
+```{r assemblies}
+
+chr <-  tribble(
+  ~Taxon,      ~Chromosome,     ~Length,
+  "mandarina",        "A",    399331041,
+  "mandarina",        "W",     11221128,
+  "mandarina",        "Z",     20271500,
+  "mori",             "A",    427322671,
+  "mori",             "W",      8618457,
+  "mori",             "Z",     20704013,
+)
+
+```
+
+## Figure 4
+
+```{r repeats_overview}
+repeats <- read_tsv("./Input_files/Repeats_all_mori_mandarina.tsv") %>% 
+  mutate(Class=gsub("RC/", "", Class)) %>%
+  mutate(Class=gsub("Ty3-", "", Class)) %>%
+  mutate(Class=gsub("sat", "Sat", Class)) %>%  
+  mutate(group=gsub("/.+", "", Class)) %>%
+  filter(absLen>50) %>%
+  filter(group != "Simple_repeat") %>%
+  filter(group != "snRNA" & group != "tRNA") %>%
+  mutate(group = gsub ("PLE", "Penelope", group)) %>%
+  mutate (group = gsub ("Unspecified", "Unknown", group)) %>%
+  mutate(group=fct_relevel(as.factor(group) , "Satellite",  "Helitron" , "DNA", "SINE",  "LINE", "Penelope","LTR" ,  "Unknown"))
+
+repeats <- repeats %>%
+  mutate (Chromosome=fct_relevel(as.factor(Chromosome), "W","A","Z")) %>%
+  mutate(Taxon = ifelse (Species == "p50T", "mori", "mandarina"))
+
+repeats <- merge(repeats, chr, by = c("Taxon", "Chromosome"))  %>%
+  mutate(Proportion = absLen*100/Length) 
+
+# repeats %>% ggplot() +
+#   geom_bar(aes(x=Taxon, y=Proportion, fill=group), stat="identity") +
+#   facet_wrap (~ Chromosome)+
+#   ylab("Percent of Chromosome ") + xlab ("") + theme_cowplot(12) +
+#   theme(legend.title = element_blank()) +
+#   theme (axis.text.x = element_text(angle = 270, vjust = 0.5, hjust =0)) +
+#   scale_fill_manual (values = Repeat_colors) +
+#   theme (axis.text.x = element_text(face = "italic"))
+
+overview <- repeats %>% ggplot() +
+  geom_bar(aes(x=Taxon, y=Proportion, fill=group), stat="identity") + 
+  facet_wrap (~ Chromosome)+
+  ylab("Chromosome %") + xlab ("") + theme_cowplot(12) + 
+  theme(legend.title = element_blank()) +
+  theme (axis.text.x = element_text(angle = 270, vjust = 0.5, hjust =0)) +
+  scale_fill_manual (values = Repeat_colors) +
+  theme (axis.text.x = element_text(face = "italic"))
+
+plot(overview)
+```
+
+```{r repeat_numbers}
+reps_counts <- read_tsv("./Input_files/Bombyx_repeats_count.tsv")
+# rearrange so Z plots last, on top of A.
+reps_counts <- reps_counts %>%
+  mutate(Chromosome = factor(Chromosome,
+                             levels = c("A", "W", "Z"))) %>%
+  arrange(Chromosome)
+
+#reps_counts$Chromosome <- factor(reps_counts$Chromosome, levels = c("Z", "W", "A"))
+  
+# ggplot (reps_counts) +
+#   geom_point (aes(x=Length/1000000, y= Rep_count, color = Chromosome), size =2.5, alpha = 0.8) +
+#   facet_wrap (~Species) +
+#   theme_cowplot(12) +
+#   theme(strip.text = element_text(face = "italic")) +
+#   xlab ("Cumulative Length of Repeats (Mbp)") +
+#   ylab ("# Repeat Families") +
+#   scale_color_manual(values=c("#1E88E5", "#D81B60",  "#005447")) +
+#   xlim (0,15)
+
+count <- ggplot (reps_counts) +
+  geom_point (aes(x=Length/1000000, y= Rep_count, color = Chromosome), size =2.5, alpha = 0.8) +
+  facet_wrap (~Species) +
+  theme_cowplot(12) +
+  theme(strip.text = element_text(face = "italic")) +
+  xlab ("Cumulative Length of Repeats (Mbp)") +
+  ylab ("# Repeat Families") +
+  scale_color_manual(values=c("#1E88E5", "#D81B60",  "#005447"))+
+  xlim (0,15)
+
+plot (count)
+```
+
+## Original Martina Plots
+``` {r landscape, eval = F}
+div <- read_delim ("./Input_files/Assemblies_landscape.tsv") %>%
+  mutate (Chromosome = fct_relevel(as.factor(Chromosome), "W", "A", "Z")) %>%
+  mutate(Group=fct_relevel(as.factor(Group) , "Satellite",  "Helitron" , "DNA", "SINE",  "LINE", "Penelope","LTR" ,  "Unknown"))
+
+
+# div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
+#   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) + 
+#   facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
+#   ylab("Chromsome % ") + xlab ("Kimura substitution level") + theme_cowplot(12) + 
+#   theme(legend.title = element_blank()) +
+#   scale_fill_manual (values = Repeat_colors) +
+#   theme(strip.text.x = element_text(face="italic"))
+
+mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
+  geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) + 
+  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
+  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
+  theme(legend.title = element_blank()) +
+  scale_fill_manual (values = Repeat_colors) +
+  theme(strip.text.x = element_text(face="italic")) +
+  xlim (0,60)
+
+# div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
+#   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) + 
+#   facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
+#   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
+#   theme(legend.title = element_blank()) +
+#   scale_fill_manual (values = Repeat_colors) +
+#   theme(strip.text.x = element_text(face="italic"))
+
+mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
+  geom_histogram (aes(x=Div, fill=Group), 
+                  color="white", 
+                  binwidth = 1, 
+                  size = 0.1) + 
+  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
+  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
+  theme(legend.title = element_blank()) +
+  scale_fill_manual (values = Repeat_colors) +
+  theme(strip.text.x = element_text(face="italic")) +
+  xlim (0,60)
+
+plot(mori)
+plot(mandarina)
+```
+
+
+## Revised by JRW
+
+``` {r landscape updated}
+div <- read_delim ("./Input_files/Assemblies_landscape.tsv") %>%
+  mutate (Chromosome = fct_relevel(as.factor(Chromosome), "W", "A", "Z")) %>%
+  mutate(Group=fct_relevel(as.factor(Group) , "Satellite",  "Helitron" , "DNA", "SINE",  "LINE", "Penelope","LTR" ,  "Unknown"))
+
+
+
+mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
+  geom_histogram (aes(x=Div, fill=Group), 
+                  color="white", 
+                  binwidth = 1, 
+                  linewidth = 0.1) + 
+  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
+  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
+  theme(legend.title = element_blank(), legend.position = "none") +
+  scale_fill_manual (values = Repeat_colors) +
+  theme(strip.text.x = element_text(face="italic")) +
+  xlim (0,60)
+
+
+mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
+  geom_histogram (aes(x=Div, fill=Group), 
+                  color="white", 
+                  binwidth = 1, 
+                  linewidth = 0.1) + 
+  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
+  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
+  theme(legend.title = element_blank(), legend.position = "none") +
+  scale_fill_manual (values = Repeat_colors) +
+  theme(strip.text.x = element_text(face="italic")) +
+  xlim (0,60)
+
+plot(mori)
+plot(mandarina)
+```
+
+
+```{r fig4}
+
+ggdraw( xlim = c(0, 180), ylim = c(0, 200))+
+  draw_plot (overview, x=0,y=90, width = 90,height = 110) +
+  draw_plot (count, x=0,y=0, width = 94,height = 88) +
+  draw_plot (mori, x=95,y=102, width = 80,height = 98) +
+  draw_plot (mandarina, x=95,y=0, width = 80,height = 98) +
+  draw_label("A", x = 2, y = 195, fontface = 'bold', size = 12) +
+  draw_label("B", x = 2, y = 93, fontface = 'bold', size = 12) +
+  draw_label("C", x = 97, y = 195, fontface = 'bold', size = 12) +
+  draw_label("D", x = 97, y = 93, fontface = 'bold', size = 12)
+
+
+fig4 <- ggdraw( xlim = c(0, 180), ylim = c(0, 200))+
+  draw_plot (overview, x=0,y=90, width = 90,height = 110) +
+  draw_plot (count, x=0,y=0, width = 94,height = 88) +
+  draw_plot (mori, x=95,y=102, width = 80,height = 98) +
+  draw_plot (mandarina, x=95,y=0, width = 80,height = 98) +
+  draw_label("A", x = 2, y = 195, fontface = 'bold', size = 12) +
+  draw_label("B", x = 2, y = 93, fontface = 'bold', size = 12) +
+  draw_label("C", x = 97, y = 195, fontface = 'bold', size = 12) +
+  draw_label("D", x = 97, y = 93, fontface = 'bold', size = 12)
+
+
+ggsave(
+  "Fig4.tiff",
+  plot   =fig4,
+  device = ragg::agg_tiff,
+  width  = 180, height = 200, units = "mm",
+  res    = 300,
+  compression = "lzw",
+  bg = "white"
+)
+```
+
+
+
+## Figure 6
+
+```{r upset_plots}
+upset_df <- repeats %>% filter(Chromosome == "A") %>% pivot_wider(id_cols = "Repeat", values_from = "absLen", names_from = "Taxon", values_fill = 0)
+
+a_upset <- upset(upset_df, intersect = c("mandarina", "mori"), name = "Autosomal Repeats", set_sizes=(
+        upset_set_size()
+        + theme(axis.text.x=element_text(angle=90))))
+
+upset_df <- repeats %>% filter(Chromosome == "W") %>% pivot_wider(id_cols = "Repeat", values_from = "absLen", names_from = "Taxon", values_fill = 0)
+
+w_upset <- upset(upset_df, intersect = c("mandarina", "mori"), name = "W Chromosome Repeats", set_sizes=(
+        upset_set_size()
+        + theme(axis.text.x=element_text(angle=90))
+    ))
+
+upset_df <- repeats %>% filter(Chromosome == "Z") %>% pivot_wider(id_cols = "Repeat", values_from = "absLen", names_from = "Taxon", values_fill = 0)
+
+z_upset <- upset(upset_df, intersect = c("mandarina", "mori"), name = "Z Chromsome Repeats", set_sizes=(
+        upset_set_size()
+        + theme(axis.text.x=element_text(angle=90))
+    ))
+
+
+tmp <- aggregate(repeats$absLen, by=list(repeats$Taxon, repeats$Repeat), sum)
+colnames(tmp) <- c("Taxon", "Repeat", "absLen")
+upset_df <- tmp  %>% pivot_wider(id_cols = "Repeat", values_from = "absLen", names_from = "Taxon", values_fill = 0)
+
+all_upset <- upset(upset_df, intersect = c("mandarina", "mori"), name = "Whole Genome Repeats", set_sizes=(
+        upset_set_size()
+        + theme(axis.text.x=element_text(angle=90))
+    ))
+
+```
+
+```{r fig6}
+ggdraw( xlim = c(0, 180), ylim = c(0, 140))+
+  draw_plot (all_upset, x=0,y=72, width = 88,height = 68) +
+  draw_plot (a_upset, x=92,y=72, width = 88,height = 68) +
+  draw_plot (z_upset, x=0,y=0, width = 88,height = 68) +
+  draw_plot (w_upset, x=92,y=0, width = 88,height = 68) +
+  draw_label("A", x = 4, y = 136, fontface = 'bold', size = 12) +
+  draw_label("B", x = 94, y = 136, fontface = 'bold', size = 12) +
+  draw_label("C", x = 4, y = 66, fontface = 'bold', size = 12) +
+  draw_label("D", x = 94, y = 66, fontface = 'bold', size = 12) +
+  draw_line(x = c(0, 180), y = c(70, 70), colour = "grey60", linewidth = 0.4) +
+  draw_line(x = c(90, 90), y = c(0, 180), colour = "grey60", linewidth = 0.4)
+
+
+fig6 <- ggdraw( xlim = c(0, 180), ylim = c(0, 140))+
+  draw_plot (all_upset, x=0,y=72, width = 88,height = 68) +
+  draw_plot (a_upset, x=92,y=72, width = 88,height = 68) +
+  draw_plot (z_upset, x=0,y=0, width = 88,height = 68) +
+  draw_plot (w_upset, x=92,y=0, width = 88,height = 68) +
+  draw_label("A", x = 4, y = 136, fontface = 'bold', size = 12) +
+  draw_label("B", x = 94, y = 136, fontface = 'bold', size = 12) +
+  draw_label("C", x = 4, y = 66, fontface = 'bold', size = 12) +
+  draw_label("D", x = 94, y = 66, fontface = 'bold', size = 12) +
+  draw_line(x = c(0, 180), y = c(70, 70), colour = "grey60", linewidth = 0.4) +
+  draw_line(x = c(90, 90), y = c(0, 180), colour = "grey60", linewidth = 0.4)
+
+
+ggsave(
+  "Fig6.tiff",
+  plot   =fig6,
+  device = ragg::agg_tiff,
+  width  = 180, height = 140, units = "mm",
+  res    = 300,
+  compression = "lzw",
+  bg = "white"
+)
+```
+
+

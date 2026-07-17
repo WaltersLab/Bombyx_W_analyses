@@ -1,0 +1,188 @@
+---
+title: "Bombyx mori and mandarina repeats on sex chromosomes"
+output: html_document
+date: "2026-07-14"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+#setwd("D:/work/Bmori/manuscript/Figures")
+library(tidyverse)
+library(ComplexUpset)
+library (cowplot)
+library (ragg)
+
+```
+
+
+```{r colors}
+Repeat_colors <- c(
+  Satellite = "#88CCEE",
+  Helitron= "#117733",
+  DNA = "#332288",
+  SINE = "#AA4499",
+  LINE = "#999933",
+  Penelope = "#6699CC",
+  LTR =  "#661100",
+  Unknown = "#888888"
+)
+```
+
+
+```{r assemblies}
+
+read_len <- species_full <- tribble(
+  ~Taxon,      ~Chromosome,       ~Length,
+  "mandarina",           "Z",    180671855,
+  "mandarina",      "masked",    337437981,
+  "mandarina",         "u50",    244629438,
+  "mori",                "Z",    658921778,
+  "mori",           "masked",    212446524,
+  "mori",              "u50",    212104118,
+)
+
+
+```
+
+## Figure 7
+
+```{r landscapes}
+
+div <- read_delim ("./Input_files/Reads_landscape.tsv") %>%
+  mutate (Chromosome = fct_relevel(as.factor(Chromosome), "Z", "u50", "masked")) %>%
+  mutate(Group=fct_relevel(as.factor(Group) , "Satellite",  "Helitron" , "DNA", "SINE",  "LINE", "Penelope","LTR" ,  "Unknown"))
+
+div <- div %>%
+  merge(read_len, by = c("Taxon", "Chromosome")) %>%
+  mutate(Proportion= bp *100/Length)
+
+# div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
+#   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) + 
+#   facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
+#   ylab("Chromsome % ") + xlab ("Kimura substitution level") + theme_cowplot(12) + 
+#   theme(legend.title = element_blank()) +
+#   scale_fill_manual (values = Repeat_colors) +
+#   theme(strip.text.x = element_text(face="italic"))
+
+mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
+  geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) + 
+  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
+  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
+  theme(legend.title = element_blank(), 
+        legend.position = "top",
+        legend.text = element_text(size = 9),
+        legend.key.size = unit(0.4, "cm")) +
+  scale_fill_manual (values = Repeat_colors) +
+  theme(strip.text.x = element_text(face="italic")) +
+  xlim (0,60)
+
+# div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
+#   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) + 
+#   facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
+#   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
+#   theme(legend.title = element_blank()) +
+#   scale_fill_manual (values = Repeat_colors) +
+#   theme(strip.text.x = element_text(face="italic"))
+
+mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
+  geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) + 
+  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
+  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
+  theme(legend.title = element_blank(), legend.position = "none") +
+  scale_fill_manual (values = Repeat_colors) +
+  theme(strip.text.x = element_text(face="italic")) +
+  xlim (0,60)
+
+print(mori)
+print(mandarina)
+
+
+```
+
+```{r upset_plots}
+repeats <- read_tsv("./Input_files/Reads_repeats.tsv")
+
+upset_df <- repeats %>% filter(Chromosome == "Z") %>% 
+  pivot_wider(id_cols = "Repeat", values_from = "absLen", names_from = "Taxon", values_fill = 0)
+
+z_upset <- upset(upset_df, intersect = c("mandarina", "mori"), name = "Z Reads Set", set_sizes=(
+        upset_set_size()
+        + theme(axis.text.x=element_text(angle=90))))
+
+upset_df <- repeats %>% filter(Chromosome == "u50") %>% 
+  pivot_wider(id_cols = "Repeat", values_from = "absLen", names_from = "Taxon", values_fill = 0)
+
+u50_upset <- upset(upset_df, intersect = c("mandarina", "mori"), name = "u50 Reads Set", set_sizes=(
+        upset_set_size()
+        + theme(axis.text.x=element_text(angle=90))
+    ))
+
+upset_df <- repeats %>% filter(Chromosome == "masked") %>% 
+  pivot_wider(id_cols = "Repeat", values_from = "absLen", names_from = "Taxon", values_fill = 0)
+
+masked_upset <- upset(upset_df, intersect = c("mandarina", "mori"), name = "Masked Reads Set", set_sizes=(
+        upset_set_size()
+        + theme(axis.text.x=element_text(angle=90))
+    ))
+
+
+```
+
+```{r fig7, fig.height=9, fig.width=11}
+# ggdraw( xlim = c(0, 180), ylim = c(0, 220))+
+#   draw_plot (mori, x=0,y=112, width = 88,height = 108) +
+#   draw_plot (mandarina, x=0,y=0, width = 88,height = 108) +
+#   draw_plot (z_upset, x=92,y=150, width = 88,height = 70) +
+#   draw_plot (u50_upset, x=92,y=75, width = 88,height = 70) +
+#   draw_plot (masked_upset, x=92,y=0, width = 88,height = 70) +
+#   draw_label("A", x = 4, y = 216, fontface = 'bold', size = 12) +
+#   draw_label("B", x = 94, y = 216, fontface = 'bold', size = 12) +
+#   draw_label("C", x = 94, y = 146, fontface = 'bold', size = 12) +
+#   draw_label("D", x = 94, y = 71, fontface = 'bold', size = 12) +
+#   draw_line(x = c(90, 180), y = c(150, 150), colour = "grey60", linewidth = 0.4) +
+#     draw_line(x = c(90, 180), y = c(74, 74), colour = "grey60", linewidth = 0.4) +
+#   draw_line(x = c(90, 90), y = c(0, 220), colour = "grey60", linewidth = 0.4)
+# 
+
+fig7 <- ggdraw( xlim = c(0, 180), ylim = c(0, 220))+
+  draw_plot (mori, x=0,y=108, width = 88,height = 112) +
+  draw_plot (mandarina, x=0,y=5, width = 88,height = 98) +
+  draw_plot (z_upset, x=92,y=150, width = 88,height = 70) +
+  draw_plot (u50_upset, x=92,y=75, width = 88,height = 70) +
+  draw_plot (masked_upset, x=92,y=0, width = 88,height = 70) +
+  draw_label("A", x = 4, y = 216, fontface = 'bold', size = 12) +
+  draw_label("B", x = 94, y = 216, fontface = 'bold', size = 12) +
+  draw_label("C", x = 94, y = 146, fontface = 'bold', size = 12) +
+  draw_label("D", x = 94, y = 71, fontface = 'bold', size = 12) +
+  draw_line(x = c(90, 180), y = c(150, 150), colour = "grey60", linewidth = 0.4) +
+    draw_line(x = c(90, 180), y = c(74, 74), colour = "grey60", linewidth = 0.4) +
+  draw_line(x = c(90, 90), y = c(0, 220), colour = "grey60", linewidth = 0.4)
+
+plot(fig7)
+
+```
+
+```{r}
+ggsave(
+  "Fig7.tiff",
+  plot   = fig7,
+  device = ragg::agg_tiff,
+  width  = 180, height = 220, units = "mm",
+  res    = 300,
+  compression = "lzw",
+  bg = "white"
+)
+
+
+ggsave(
+  "Fig7.png",
+  plot   = fig7,
+  device = ragg::agg_png,
+  width  = 180, height = 220, units = "mm",
+  res    = 300,
+  #compression = "lzw",
+  bg = "white"
+)
+```
+
+
