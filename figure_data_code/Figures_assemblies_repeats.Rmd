@@ -4,8 +4,9 @@ output: html_document
 date: "2026-07-14"
 ---
 
+# Libraries
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 #setwd("D:/work/Bmori/manuscript/Figures")
 library(tidyverse)
 library(ComplexUpset)
@@ -14,7 +15,7 @@ library (ragg)
 
 ```
 
-
+#Configure 
 ```{r colors}
 Repeat_colors <- c(
   Satellite = "#88CCEE",
@@ -43,8 +44,10 @@ chr <-  tribble(
 
 ```
 
-## Figure 4
+# Figure 4
 
+
+## Overview
 ```{r repeats_overview}
 repeats <- read_tsv("./Input_files/Repeats_all_mori_mandarina.tsv") %>% 
   mutate(Class=gsub("RC/", "", Class)) %>%
@@ -86,6 +89,8 @@ overview <- repeats %>% ggplot() +
 plot(overview)
 ```
 
+# Richness
+
 ```{r repeat_numbers}
 reps_counts <- read_tsv("./Input_files/Bombyx_repeats_count.tsv")
 # rearrange so Z plots last, on top of A.
@@ -119,8 +124,10 @@ count <- ggplot (reps_counts) +
 plot (count)
 ```
 
+# Landscapes
+
 ## Original Martina Plots
-``` {r landscape, eval = F}
+``` {r landscape, eval = T}
 div <- read_delim ("./Input_files/Assemblies_landscape.tsv") %>%
   mutate (Chromosome = fct_relevel(as.factor(Chromosome), "W", "A", "Z")) %>%
   mutate(Group=fct_relevel(as.factor(Group) , "Satellite",  "Helitron" , "DNA", "SINE",  "LINE", "Penelope","LTR" ,  "Unknown"))
@@ -163,32 +170,30 @@ mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proporti
   theme(strip.text.x = element_text(face="italic")) +
   xlim (0,60)
 
-plot(mori)
-plot(mandarina)
+#plot(mori)
+#plot(mandarina)
+
+plot_grid(mori, mandarina)
 ```
 
+Martina's plots had a few issues.  One is just software versioning, where she used `size` the contemporary command is `linewidth`, at least for my mac.
 
-## Revised by JRW
+But I think this code may also by cutting the lowest bin, as explained in the `repeats` code document. We can modify the way the Xlim is specified to confirm this.
 
-``` {r landscape updated}
-div <- read_delim ("./Input_files/Assemblies_landscape.tsv") %>%
-  mutate (Chromosome = fct_relevel(as.factor(Chromosome), "W", "A", "Z")) %>%
-  mutate(Group=fct_relevel(as.factor(Group) , "Satellite",  "Helitron" , "DNA", "SINE",  "LINE", "Penelope","LTR" ,  "Unknown"))
 
+## Martina xlim-corrected
+
+```{r}
 
 
 mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
-  geom_histogram (aes(x=Div, fill=Group), 
-                  color="white", 
-                  binwidth = 1, 
-                  linewidth = 0.1) + 
+  geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) + 
   facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
-  theme(legend.title = element_blank(), legend.position = "none") +
+  theme(legend.title = element_blank()) +
   scale_fill_manual (values = Repeat_colors) +
   theme(strip.text.x = element_text(face="italic")) +
-  xlim (0,60)
-
+  coord_cartesian(xlim = c(0, 60))
 
 mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
   geom_histogram (aes(x=Div, fill=Group), 
@@ -197,13 +202,62 @@ mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proporti
                   linewidth = 0.1) + 
   facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
+  theme(legend.title = element_blank()) +
+  scale_fill_manual (values = Repeat_colors) +
+  theme(strip.text.x = element_text(face="italic")) +
+  coord_cartesian(xlim = c(0, 60))
+
+#plot(mori)
+#plot(mandarina)
+
+plot_grid(mori, mandarina)
+```
+
+
+## Revised by JRW
+
+
+Here I've tweaked the plots, explicitly setting bin boundaries on integer values and removing legends, which are redundant in the final combined plot.
+
+``` {r landscape updated}
+div <- read_delim ("./Input_files/Assemblies_landscape.tsv") %>%
+  mutate (Chromosome = fct_relevel(as.factor(Chromosome), "W", "A", "Z")) %>%
+  mutate(Group=fct_relevel(as.factor(Group) , "Satellite",  "Helitron" , "DNA", "SINE",  "LINE", "Penelope","LTR" ,  "Unknown"))
+
+xMax <- 50
+
+mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
+  geom_histogram (aes(x=Div, fill=Group), 
+                  binwidth = 1,
+                  boundary = 0,
+                  closed = "left",
+                  color="white", 
+                  linewidth = 0.1) + 
+  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
+  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
   theme(legend.title = element_blank(), legend.position = "none") +
   scale_fill_manual (values = Repeat_colors) +
   theme(strip.text.x = element_text(face="italic")) +
-  xlim (0,60)
+  coord_cartesian(xlim = c(0, xMax))
 
-plot(mori)
-plot(mandarina)
+
+mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
+  geom_histogram (aes(x=Div, fill=Group), 
+                  binwidth = 1,
+                  boundary = 0,
+                  closed = "left",
+                  color="white", 
+                  linewidth = 0.1) + 
+  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
+  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
+  theme(legend.title = element_blank(), legend.position = "none") +
+  scale_fill_manual (values = Repeat_colors) +
+  theme(strip.text.x = element_text(face="italic")) +
+  coord_cartesian(xlim = c(0, xMax))
+
+#plot(mori)
+#plot(mandarina)
+plot_grid(mori, mandarina)
 ```
 
 
@@ -317,4 +371,9 @@ ggsave(
 )
 ```
 
+
+
+```{r}
+sessionInfo()
+```
 
