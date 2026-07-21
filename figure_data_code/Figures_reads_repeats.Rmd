@@ -48,143 +48,143 @@ read_len <- species_full <- tribble(
 
 # Figure 7 
 
-## Martina Original
+<!-- ## Martina Original -->
 
-```{r landscapes, eval = T}
+<!-- ```{r landscapes, eval = T} -->
 
-div <- read_delim ("./Input_files/Reads_landscape.tsv") %>%
-  mutate (Chromosome = fct_relevel(as.factor(Chromosome), "Z", "u50", "masked")) %>%
-  mutate(Group=fct_relevel(as.factor(Group) , "Satellite",  "Helitron" , "DNA", "SINE",  "LINE", "Penelope","LTR" ,  "Unknown"))
+<!-- div <- read_delim ("./Input_files/Reads_landscape.tsv") %>% -->
+<!--   mutate (Chromosome = fct_relevel(as.factor(Chromosome), "Z", "u50", "masked")) %>% -->
+<!--   mutate(Group=fct_relevel(as.factor(Group) , "Satellite",  "Helitron" , "DNA", "SINE",  "LINE", "Penelope","LTR" ,  "Unknown")) -->
 
-div <- div %>%
-  merge(read_len, by = c("Taxon", "Chromosome")) %>%
-  mutate(Proportion= bp *100/Length)
+<!-- div <- div %>% -->
+<!--   merge(read_len, by = c("Taxon", "Chromosome")) %>% -->
+<!--   mutate(Proportion= bp *100/Length) -->
 
-# div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
-#   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) + 
-#   facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
-#   ylab("Chromsome % ") + xlab ("Kimura substitution level") + theme_cowplot(12) + 
-#   theme(legend.title = element_blank()) +
-#   scale_fill_manual (values = Repeat_colors) +
-#   theme(strip.text.x = element_text(face="italic"))
+<!-- # div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) + -->
+<!-- #   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) +  -->
+<!-- #   facet_grid(Chromosome ~ Taxon, scales = "free_y") +  -->
+<!-- #   ylab("Chromsome % ") + xlab ("Kimura substitution level") + theme_cowplot(12) +  -->
+<!-- #   theme(legend.title = element_blank()) + -->
+<!-- #   scale_fill_manual (values = Repeat_colors) + -->
+<!-- #   theme(strip.text.x = element_text(face="italic")) -->
 
-mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
-  geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) + 
-  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
-  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
-  theme(legend.title = element_blank(), 
-        legend.position = "top",
-        legend.text = element_text(size = 9),
-        legend.key.size = unit(0.4, "cm")) +
-  scale_fill_manual (values = Repeat_colors) +
-  theme(strip.text.x = element_text(face="italic")) +
-  xlim (0,60)
+<!-- mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) + -->
+<!--   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) +  -->
+<!--   facet_grid(Chromosome ~ Taxon, scales = "free_y") +  -->
+<!--   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) +  -->
+<!--   theme(legend.title = element_blank(),  -->
+<!--         legend.position = "top", -->
+<!--         legend.text = element_text(size = 9), -->
+<!--         legend.key.size = unit(0.4, "cm")) + -->
+<!--   scale_fill_manual (values = Repeat_colors) + -->
+<!--   theme(strip.text.x = element_text(face="italic")) + -->
+<!--   xlim (0,60) -->
 
-# div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
-#   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) + 
-#   facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
-#   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
-#   theme(legend.title = element_blank()) +
-#   scale_fill_manual (values = Repeat_colors) +
-#   theme(strip.text.x = element_text(face="italic"))
+<!-- # div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) + -->
+<!-- #   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) +  -->
+<!-- #   facet_grid(Chromosome ~ Taxon, scales = "free_y") +  -->
+<!-- #   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) +  -->
+<!-- #   theme(legend.title = element_blank()) + -->
+<!-- #   scale_fill_manual (values = Repeat_colors) + -->
+<!-- #   theme(strip.text.x = element_text(face="italic")) -->
 
-mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
-  geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) + 
-  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
-  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
-  theme(legend.title = element_blank(), legend.position = "none") +
-  scale_fill_manual (values = Repeat_colors) +
-  theme(strip.text.x = element_text(face="italic")) +
-  xlim (0,60)
+<!-- mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) + -->
+<!--   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) +  -->
+<!--   facet_grid(Chromosome ~ Taxon, scales = "free_y") +  -->
+<!--   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) +  -->
+<!--   theme(legend.title = element_blank(), legend.position = "none") + -->
+<!--   scale_fill_manual (values = Repeat_colors) + -->
+<!--   theme(strip.text.x = element_text(face="italic")) + -->
+<!--   xlim (0,60) -->
 
-# print(mori)
-# print(mandarina)
+<!-- # print(mori) -->
+<!-- # print(mandarina) -->
 
-plot_grid(mori,mandarina)
-
-
-```
-
-## Figure discrepancies
-
-There discrepancies in these revised plots, versus earlier versions of these plots. Also, `u50` and `masked` the plots were strangely scaled on the y-axis, especially for _mandarina_, with far greater axes than needed for visualized data.
-
-Consulting with ChatGPT, it appears Martina's current plot was not showing lowest divergence bin, and apparently was calculating averages based on bins centered on integers, rather than on 0.5 values.  So calculated values were not `[0,1)` but rather `[-0.5,0.5)`. We can see this by manually inspecting the data going into the ggplot, and showing that there are very large columns at minimal divergence not getting plotted. 
+<!-- plot_grid(mori,mandarina) -->
 
 
-```{r}
+<!-- ``` -->
 
-mandarina_built <- ggplot_build(mandarina)
+<!-- ## Figure discrepancies -->
 
-mandarina_bins <- mandarina_built$data[[1]] %>%
-  left_join(
-    mandarina_built$layout$layout %>%
-      select(PANEL, Chromosome),
-    by = "PANEL"
-  )
+<!-- There discrepancies in these revised plots, versus earlier versions of these plots. Also, `u50` and `masked` the plots were strangely scaled on the y-axis, especially for _mandarina_, with far greater axes than needed for visualized data. -->
 
-kbl(head(mandarina_bins, n = 10)) %>% 
-  kable_classic_2()
-
-mandarina_bins %>%
-  group_by(Chromosome) %>%
-  summarise(
-    maximum_stack = max(ymax, na.rm = TRUE),
-    maximum_segment = max(ymax - ymin, na.rm = TRUE)
-  )
-
-mandarina_bins %>%
-  group_by(Chromosome, x) %>%
-  summarise(
-    stack_height = max(ymax, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  arrange(Chromosome, desc(stack_height)) %>%
-  group_by(Chromosome) %>%
-  slice_head(n = 5)
-```
+<!-- Consulting with ChatGPT, it appears Martina's current plot was not showing lowest divergence bin, and apparently was calculating averages based on bins centered on integers, rather than on 0.5 values.  So calculated values were not `[0,1)` but rather `[-0.5,0.5)`. We can see this by manually inspecting the data going into the ggplot, and showing that there are very large columns at minimal divergence not getting plotted.  -->
 
 
-This seems to interact badly with using the `xlim` function to set X axis boundaries, because this _removes_ data from the lowest bin from the plot.  This can be avoided by setting visualized X-axis with `coord_cartesian(xlim = c(0, 60))`. So we can "reveal" the missing bin by swapping out the final command for setting the X-axis.
+<!-- ```{r} -->
 
-```{r}
-mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
-  geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) + 
-  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
-  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
-  theme(legend.title = element_blank(), 
-        legend.position = "top",
-        legend.text = element_text(size = 9),
-        legend.key.size = unit(0.4, "cm")) +
-  scale_fill_manual (values = Repeat_colors) +
-  theme(strip.text.x = element_text(face="italic")) +
-  coord_cartesian(xlim = c(0, 60))
-  #xlim (0,60)
+<!-- mandarina_built <- ggplot_build(mandarina) -->
+
+<!-- mandarina_bins <- mandarina_built$data[[1]] %>% -->
+<!--   left_join( -->
+<!--     mandarina_built$layout$layout %>% -->
+<!--       select(PANEL, Chromosome), -->
+<!--     by = "PANEL" -->
+<!--   ) -->
+
+<!-- kbl(head(mandarina_bins, n = 10)) %>%  -->
+<!--   kable_classic_2() -->
+
+<!-- mandarina_bins %>% -->
+<!--   group_by(Chromosome) %>% -->
+<!--   summarise( -->
+<!--     maximum_stack = max(ymax, na.rm = TRUE), -->
+<!--     maximum_segment = max(ymax - ymin, na.rm = TRUE) -->
+<!--   ) -->
+
+<!-- mandarina_bins %>% -->
+<!--   group_by(Chromosome, x) %>% -->
+<!--   summarise( -->
+<!--     stack_height = max(ymax, na.rm = TRUE), -->
+<!--     .groups = "drop" -->
+<!--   ) %>% -->
+<!--   arrange(Chromosome, desc(stack_height)) %>% -->
+<!--   group_by(Chromosome) %>% -->
+<!--   slice_head(n = 5) -->
+<!-- ``` -->
 
 
-mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
-  geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) + 
-  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
-  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
-  theme(legend.title = element_blank(), legend.position = "none") +
-  scale_fill_manual (values = Repeat_colors) +
-  theme(strip.text.x = element_text(face="italic")) +
-  coord_cartesian(xlim = c(0, 60))
-  #xlim (0,60)
+<!-- This seems to interact badly with using the `xlim` function to set X axis boundaries, because this _removes_ data from the lowest bin from the plot.  This can be avoided by setting visualized X-axis with `coord_cartesian(xlim = c(0, 60))`. So we can "reveal" the missing bin by swapping out the final command for setting the X-axis. -->
 
-#print(mori)
-#print(mandarina)
+<!-- ```{r} -->
+<!-- mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) + -->
+<!--   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) +  -->
+<!--   facet_grid(Chromosome ~ Taxon, scales = "free_y") +  -->
+<!--   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) +  -->
+<!--   theme(legend.title = element_blank(),  -->
+<!--         legend.position = "top", -->
+<!--         legend.text = element_text(size = 9), -->
+<!--         legend.key.size = unit(0.4, "cm")) + -->
+<!--   scale_fill_manual (values = Repeat_colors) + -->
+<!--   theme(strip.text.x = element_text(face="italic")) + -->
+<!--   coord_cartesian(xlim = c(0, 60)) -->
+<!--   #xlim (0,60) -->
 
-plot_grid(mori,mandarina)
-```
+
+<!-- mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) + -->
+<!--   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) +  -->
+<!--   facet_grid(Chromosome ~ Taxon, scales = "free_y") +  -->
+<!--   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) +  -->
+<!--   theme(legend.title = element_blank(), legend.position = "none") + -->
+<!--   scale_fill_manual (values = Repeat_colors) + -->
+<!--   theme(strip.text.x = element_text(face="italic")) + -->
+<!--   coord_cartesian(xlim = c(0, 60)) -->
+<!--   #xlim (0,60) -->
+
+<!-- #print(mori) -->
+<!-- #print(mandarina) -->
+
+<!-- plot_grid(mori,mandarina) -->
+<!-- ``` -->
 
 
 
 # Fig 7 
 
-# JRW revised
+<!-- # JRW revised -->
 
-ChatGPT suggests a better solution is to explicitly set binwidth and boundary to capture the bins `[0,1]`.  Though the resulting plots appear identical. 
+<!-- ChatGPT suggests a better solution is to explicitly set binwidth and boundary to capture the bins `[0,1]`.  Though the resulting plots appear identical.  -->
 
 ```{r landscapes JRW}
 

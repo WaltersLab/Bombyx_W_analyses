@@ -126,92 +126,92 @@ plot (count)
 
 # Landscapes
 
-## Original Martina Plots
-``` {r landscape, eval = T}
-div <- read_delim ("./Input_files/Assemblies_landscape.tsv") %>%
-  mutate (Chromosome = fct_relevel(as.factor(Chromosome), "W", "A", "Z")) %>%
-  mutate(Group=fct_relevel(as.factor(Group) , "Satellite",  "Helitron" , "DNA", "SINE",  "LINE", "Penelope","LTR" ,  "Unknown"))
+<!-- ## Original Martina Plots -->
+<!-- ``` {r landscape, eval = T} -->
+<!-- div <- read_delim ("./Input_files/Assemblies_landscape.tsv") %>% -->
+<!--   mutate (Chromosome = fct_relevel(as.factor(Chromosome), "W", "A", "Z")) %>% -->
+<!--   mutate(Group=fct_relevel(as.factor(Group) , "Satellite",  "Helitron" , "DNA", "SINE",  "LINE", "Penelope","LTR" ,  "Unknown")) -->
 
 
-# div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
-#   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) + 
-#   facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
-#   ylab("Chromsome % ") + xlab ("Kimura substitution level") + theme_cowplot(12) + 
-#   theme(legend.title = element_blank()) +
-#   scale_fill_manual (values = Repeat_colors) +
-#   theme(strip.text.x = element_text(face="italic"))
+<!-- # div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) + -->
+<!-- #   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) +  -->
+<!-- #   facet_grid(Chromosome ~ Taxon, scales = "free_y") +  -->
+<!-- #   ylab("Chromsome % ") + xlab ("Kimura substitution level") + theme_cowplot(12) +  -->
+<!-- #   theme(legend.title = element_blank()) + -->
+<!-- #   scale_fill_manual (values = Repeat_colors) + -->
+<!-- #   theme(strip.text.x = element_text(face="italic")) -->
 
-mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
-  geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) + 
-  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
-  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
-  theme(legend.title = element_blank()) +
-  scale_fill_manual (values = Repeat_colors) +
-  theme(strip.text.x = element_text(face="italic")) +
-  xlim (0,60)
+<!-- mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) + -->
+<!--   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) +  -->
+<!--   facet_grid(Chromosome ~ Taxon, scales = "free_y") +  -->
+<!--   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) +  -->
+<!--   theme(legend.title = element_blank()) + -->
+<!--   scale_fill_manual (values = Repeat_colors) + -->
+<!--   theme(strip.text.x = element_text(face="italic")) + -->
+<!--   xlim (0,60) -->
 
-# div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
-#   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) + 
-#   facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
-#   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
-#   theme(legend.title = element_blank()) +
-#   scale_fill_manual (values = Repeat_colors) +
-#   theme(strip.text.x = element_text(face="italic"))
+<!-- # div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) + -->
+<!-- #   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, size = 0.1) +  -->
+<!-- #   facet_grid(Chromosome ~ Taxon, scales = "free_y") +  -->
+<!-- #   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) +  -->
+<!-- #   theme(legend.title = element_blank()) + -->
+<!-- #   scale_fill_manual (values = Repeat_colors) + -->
+<!-- #   theme(strip.text.x = element_text(face="italic")) -->
 
-mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
-  geom_histogram (aes(x=Div, fill=Group), 
-                  color="white", 
-                  binwidth = 1, 
-                  size = 0.1) + 
-  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
-  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
-  theme(legend.title = element_blank()) +
-  scale_fill_manual (values = Repeat_colors) +
-  theme(strip.text.x = element_text(face="italic")) +
-  xlim (0,60)
+<!-- mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) + -->
+<!--   geom_histogram (aes(x=Div, fill=Group),  -->
+<!--                   color="white",  -->
+<!--                   binwidth = 1,  -->
+<!--                   size = 0.1) +  -->
+<!--   facet_grid(Chromosome ~ Taxon, scales = "free_y") +  -->
+<!--   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) +  -->
+<!--   theme(legend.title = element_blank()) + -->
+<!--   scale_fill_manual (values = Repeat_colors) + -->
+<!--   theme(strip.text.x = element_text(face="italic")) + -->
+<!--   xlim (0,60) -->
 
-#plot(mori)
-#plot(mandarina)
+<!-- #plot(mori) -->
+<!-- #plot(mandarina) -->
 
-plot_grid(mori, mandarina)
-```
+<!-- plot_grid(mori, mandarina) -->
+<!-- ``` -->
 
-Martina's plots had a few issues.  One is just software versioning, where she used `size` the contemporary command is `linewidth`, at least for my mac.
+<!-- Martina's plots had a few issues.  One is just software versioning, where she used `size` the contemporary command is `linewidth`, at least for my mac. -->
 
-But I think this code may also by cutting the lowest bin, as explained in the `repeats` code document. We can modify the way the Xlim is specified to confirm this.
-
-
-## Martina xlim-corrected
-
-```{r}
+<!-- But I think this code may also by cutting the lowest bin, as explained in the `repeats` code document. We can modify the way the Xlim is specified to confirm this. -->
 
 
-mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) +
-  geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) + 
-  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
-  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
-  theme(legend.title = element_blank()) +
-  scale_fill_manual (values = Repeat_colors) +
-  theme(strip.text.x = element_text(face="italic")) +
-  coord_cartesian(xlim = c(0, 60))
+<!-- ## Martina xlim-corrected -->
 
-mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) +
-  geom_histogram (aes(x=Div, fill=Group), 
-                  color="white", 
-                  binwidth = 1, 
-                  linewidth = 0.1) + 
-  facet_grid(Chromosome ~ Taxon, scales = "free_y") + 
-  ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) + 
-  theme(legend.title = element_blank()) +
-  scale_fill_manual (values = Repeat_colors) +
-  theme(strip.text.x = element_text(face="italic")) +
-  coord_cartesian(xlim = c(0, 60))
+<!-- ```{r} -->
 
-#plot(mori)
-#plot(mandarina)
 
-plot_grid(mori, mandarina)
-```
+<!-- mori <- div %>% filter(Taxon == "mori") %>% ggplot(aes(weight=Proportion)) + -->
+<!--   geom_histogram (aes(x=Div, fill=Group), color="white", binwidth = 1, linewidth = 0.1) +  -->
+<!--   facet_grid(Chromosome ~ Taxon, scales = "free_y") +  -->
+<!--   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) +  -->
+<!--   theme(legend.title = element_blank()) + -->
+<!--   scale_fill_manual (values = Repeat_colors) + -->
+<!--   theme(strip.text.x = element_text(face="italic")) + -->
+<!--   coord_cartesian(xlim = c(0, 60)) -->
+
+<!-- mandarina <- div %>% filter(Taxon == "mandarina") %>% ggplot(aes(weight=Proportion)) + -->
+<!--   geom_histogram (aes(x=Div, fill=Group),  -->
+<!--                   color="white",  -->
+<!--                   binwidth = 1,  -->
+<!--                   linewidth = 0.1) +  -->
+<!--   facet_grid(Chromosome ~ Taxon, scales = "free_y") +  -->
+<!--   ylab("Chromsome % ") + xlab ("Kimura Substitution Level") + theme_cowplot(12) +  -->
+<!--   theme(legend.title = element_blank()) + -->
+<!--   scale_fill_manual (values = Repeat_colors) + -->
+<!--   theme(strip.text.x = element_text(face="italic")) + -->
+<!--   coord_cartesian(xlim = c(0, 60)) -->
+
+<!-- #plot(mori) -->
+<!-- #plot(mandarina) -->
+
+<!-- plot_grid(mori, mandarina) -->
+<!-- ``` -->
 
 
 ## Revised by JRW
