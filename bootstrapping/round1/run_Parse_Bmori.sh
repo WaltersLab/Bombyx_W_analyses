@@ -11,4 +11,4 @@
 
 module load r/4.6.1
 
-R CMD BATCH --vanilla Parse_Bmori_GFF.R
+R CMD BATCH --no-save Parse_Bmori_GFF.R
