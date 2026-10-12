@@ -29,7 +29,7 @@ bmSysTime <- system.time(
     repeats = bmRepeats,
     score_col = "score",
     family_col = "repeat_family",
-    mc.cores = 29,
+    mc.cores = 18,
     verbose = TRUE
   )
 )

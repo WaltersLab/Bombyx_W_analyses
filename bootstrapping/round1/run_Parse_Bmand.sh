@@ -2,8 +2,8 @@
 #SBATCH -p intel
 #SBATCH -N 1
 #SBATCH -n 1
-#SBATCH -c 30
-#SBATCH --mem=6GB
+#SBATCH -c 20
+#SBATCH --mem=100GB
 #SBATCH -t 03:00:00 
 #SBATCH -J BmandParse
 #SBATCH -o BmandParse-%j.out
