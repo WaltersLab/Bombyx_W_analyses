@@ -1,0 +1,111 @@
+
+R version 4.6.1 (2026-06-24) -- "Happy Hop"
+Copyright (C) 2026 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library("BootstrapBombyxRepeats")
+> library("GenomicRanges")
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: generics
+
+Attaching package: ‘generics’
+
+The following objects are masked from ‘package:base’:
+
+    as.difftime, as.factor, as.ordered, intersect, is.element, setdiff,
+    setequal, union
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, aperm, append, as.data.frame, basename, cbind,
+    colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
+    get, grep, grepl, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, saveRDS, table, tapply, unique,
+    unsplit, which.max, which.min
+
+Loading required package: S4Vectors
+
+Attaching package: ‘S4Vectors’
+
+The following object is masked from ‘package:utils’:
+
+    findMatches
+
+The following objects are masked from ‘package:base’:
+
+    expand.grid, I, unname
+
+Loading required package: IRanges
+Loading required package: Seqinfo
+> 
+> ingff <- "/nfs/work/jwalters/mdalikova/Bombyx/Bmandarina_RepeatMasker2.out.gff"
+> inChr <- "Bmand_ChrAccLen.tsv"
+> 
+> 
+> bmRepeats <- read_repeatmasker_gff(gff_file = ingff)
+> 
+> bmChroms <- read.delim(file = inChr)
+> 
+> 
+> # create a look-up vector with `Chr` values and Accession names
+> lookupVec <- setNames(nm = bmChroms$contig ,
++                       object = paste0("Chr",bmChroms$chromosome) )
+> 
+> # now rename the sequences with appropriate BioC command, 
+> # which updates seqlevels metadata in GRanges object
+> bmRepeats <- GenomeInfoDb::renameSeqlevels(bmRepeats, lookupVec)
+> 
+> # Also create a chrom-lengths vector for use with functions
+> bmChrLengths <- setNames(object = bmChroms$length ,
++                          nm = paste0("Chr",bmChroms$chromosome) )
+> 
+> 
+> # Resolve Repeats
+> bmSysTime <- system.time(
++   bmResolved <- resolve_repeat_overlaps(
++     repeats = bmRepeats,
++     score_col = "score",
++     family_col = "repeat_family",
++     mc.cores = 18,
++     verbose = TRUE
++   )
++ )
+Resolving 28 chromosomes using 18 cores.
+Overlap resolution complete.
+1030595 original annotations -> 988097 non-overlapping output fragments.
+43818 original annotations were completely removed.
+30,949,924 bp of redundant overlapping annotation were resolved.
+Final unique repeat coverage: 211,893,368 bp.
+> 
+> print(bmSysTime)
+     user    system   elapsed 
+42696.634    49.199  3676.834 
+> 
+> save(bmResolved, file = "Bmand_Repeats_Resolved.Rda")
+> 
+> 
+> 
+> proc.time()
+     user    system   elapsed 
+42717.662    49.740  3698.748 
