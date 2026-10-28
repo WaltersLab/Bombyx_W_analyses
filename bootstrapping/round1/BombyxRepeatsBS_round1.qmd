@@ -1,0 +1,919 @@
+---
+title: "Bootstrapping Bombyx Repeats: Round1"
+author: James R. Walters
+date: today
+format: html
+embed-resources: true
+toc: true
+number-sections: true
+---
+
+# Overview
+
+This represents a first-draft attempt to implement bootstrapping analyses and associated visualizations implemented to address reviewer concerns regarding the lack of confidence intervals on prominent observations regarding repeat content, richness, and similarity between B. mori and B. mandarina. 
+
+Most of the code for implementing this bootstrapping has been developed in the context of a package, developed specifically for this purpose:
+
+https://github.com/WaltersLab/BootstrapBombyxRepeats
+
+This script employs the functions and methods developed in that package to add bootstrapped-derived estimates of uncertainty for these point estimates.
+
+
+
+# Libraries
+```{r}
+library(BootstrapBombyxRepeats)
+library(kableExtra)
+library(ggplot2)
+library(cowplot)
+library(patchwork)
+```
+
+
+# Import Data
+
+Due to the long run-time to resolve the repeat overlaps, I ran that step on the cluster. So these upstream steps are in shell sbatch scripts.
+
+```{r}
+inputPath <- "/Users/j036w617/Documents/Projects/Bombyx_W_comparisons/Bombyx_W_analyses/bootstrapping/round1/"
+```
+
+
+
+## Import resolved repeats
+
+Both data files are saved as objects called `bmResolved`, so I'll need to rename them. And remove the object to avoid confusion
+```{r}
+load(file = "Bmand_Repeats_Resolved.Rda")
+BmandReps <- bmResolved
+
+load(file = "Bmori_Repeats_Resolved.Rda")
+BmoriReps <- bmResolved
+
+rm(bmResolved)
+```
+
+
+
+## Import other data
+
+
+### Import B. mori
+```{r}
+moriChroms <- read.delim(file = "Bmori_ChrAccLen.tsv")
+
+# create a look-up vector with `Chr` values and Accession names
+moriLookupVec <- setNames(nm = moriChroms$contig ,
+                      object = paste0("Chr",moriChroms$chromosome) )
+
+# Also create a chrom-lengths vector for use with functions
+moriChrLengths <- setNames(object = moriChroms$length ,
+                         nm = paste0("Chr",moriChroms$chromosome) )
+
+```
+
+### Import B. mandarina
+```{r}
+mandChroms <- read.delim(file =  "Bmand_ChrAccLen.tsv")
+
+
+# create a look-up vector with `Chr` values and Accession names
+mandLookupVec <- setNames(nm = mandChroms$contig ,
+                      object = paste0("Chr",mandChroms$chromosome) )
+
+# Also create a chrom-lengths vector for use with functions
+mandChrLengths <- setNames(object = mandChroms$length ,
+                         nm = paste0("Chr",mandChroms$chromosome) )
+
+```
+
+
+## Import Repeat Type
+
+```{r}
+repType <- read.delim(file = "repeat_classes.tsv",
+                      col.names = c("repeat_family", "repeat_class", "subclass"))
+
+# parsing of the library fasta resulted in some extra white-spaces.
+repType$repeat_family <- trimws(repType$repeat_family)
+repType$repeat_class <- trimws(repType$repeat_class)
+repType$subclass <- trimws(repType$subclass)
+repType$repeat_class[repType$repeat_class == "PLE"] <- "Penelope"
+repType$repeat_class[repType$repeat_class == "RC"] <- "Helitron"
+table(repType$repeat_class)
+nrow(repType)
+
+```
+
+### Parsing repeat type
+
+I think Martina updated the naming scheme of the library after repeat masking. So to map repeat family to type (class), I need to replace the “origin” prefix.
+
+```{r}
+fixRep <- repType$repeat_family
+fixRep <- sub(pattern = "p50ma" , replacement ="GCF" , x = fixRep)
+fixRep <- sub(pattern = "p50T" , replacement ="GCA" , x = fixRep)
+fixRep <- sub(pattern = "Sakado" , replacement ="mandarina" , x = fixRep)
+fixRep <- sub(pattern = "Dazao_" , replacement ="" , x = fixRep)
+
+repType$repeat_family <- fixRep
+
+# head(sort(table(fixRep), decreasing = T ))
+```
+
+# Summarize Resolutions
+
+## B. mori resolutions
+
+```{r}
+moriResolvedSummary <- S4Vectors::metadata(BmoriReps)
+moriResolvedSummary$overlap_resolution
+
+kbl(moriResolvedSummary$overlap_resolution_by_chromosome) |>  
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                font_size = 9, fixed_thead = T) |>
+  scroll_box(width = "100%", height = "400px")
+```
+
+## B. mandarina resolutions
+
+```{r}
+mandResolvedSummary <- S4Vectors::metadata(BmandReps)
+mandResolvedSummary$overlap_resolution
+
+kbl(mandResolvedSummary$overlap_resolution_by_chromosome) |>  
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                font_size = 9, fixed_thead = T) |>
+  scroll_box(width = "100%", height = "400px")
+```
+
+
+
+# Build Block Data
+
+We will build the data structure that breaks the repeat annotations in each segments for each chromosome.
+
+```{r}
+blockSize <- 100000
+```
+
+
+## B. mori blocks
+
+```{r}
+moriBlocks <- build_block_data(repeats = BmoriReps,
+                             chr_lengths = moriChrLengths,
+                             chromosome_map = NULL,
+                             assembly = "p50T",
+                             target_width = blockSize,
+                             family_col = "repeat_family",
+                             repeat_classes = repType)
+```
+
+
+## B. mandarina blocks
+
+```{r}
+mandBlocks <- build_block_data(repeats = BmandReps,
+                             chr_lengths = mandChrLengths,
+                             chromosome_map = NULL,
+                             assembly = "mandarina",
+                             target_width = blockSize,
+                             family_col = "repeat_family",
+                             repeat_classes = repType)
+```
+
+
+
+
+## Observed results 
+
+From these block structures, we can extract the observed values for the whole genome by chromosome or groupings (e.g. Z, W, A).  These results by chromosome are already available inside the result from `build_block_data()`, e.g., `moriBlocks$osberved`.  But these functions support correctly aggregating results by groups (e.g. ZWA), and also provide the input for `bootstrap_ci()` function used later to give confidence intervals alongside observed values.
+
+### For Fractions
+
+#### mori
+```{r}
+moriFracObs <- observed_fraction(block_data = moriBlocks)
+
+morizwa <- c("Z", rep("A", 27), "W")
+names(morizwa) <- names(moriChrLengths)
+
+moriFracObsZWA <- observed_fraction(block_data = moriBlocks,
+                                 chromosome_groups = morizwa)
+
+```
+
+```{r}
+kbl(moriFracObs, caption = "B. mori repeat fraction by chromosome") |>  
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                font_size = 9, fixed_thead = T) |>
+  scroll_box(width = "100%", height = "400px")
+
+kbl(moriFracObsZWA, caption = "B. mori repeat fraction by ZWA") |>  
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                font_size = 9, fixed_thead = T) |>
+  scroll_box(width = "100%")
+```
+
+#### mandarina
+
+
+```{r}
+mandFracObs <- observed_fraction(block_data = mandBlocks)
+
+mandzwa <- c("Z", rep("A", 26), "W")
+names(mandzwa) <- names(mandChrLengths)
+
+mandFracObsZWA <- observed_fraction(block_data = mandBlocks,
+                                 chromosome_groups = mandzwa)
+```
+
+```{r}
+kbl(mandFracObs, caption = "B. mandarina repeat fraction by chromosome") |>  
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                font_size = 9, fixed_thead = T) |>
+  scroll_box(width = "100%", height = "400px")
+
+kbl(mandFracObsZWA, caption = "B. mandarina repeat fraction by ZWA") |>  
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                font_size = 9, fixed_thead = T) |>
+  scroll_box(width = "100%")
+```
+
+#### Merge
+
+Combine results from both taxa into a single dataframe.
+
+```{r}
+observedChr <- rbind(moriFracObs, mandFracObs)
+observedZWA <- rbind(moriFracObsZWA, mandFracObsZWA)
+
+write.csv(observedChr, file = "results_bs/FractionObservedCHR.csv", row.names = F)
+write.csv(observedZWA, file = "results_bs/FractionObservedZWA.csv", row.names = F)
+```
+
+
+### For Richness
+
+#### mori
+```{r}
+
+moriRichObs <- observed_richness(block_data = moriBlocks)
+
+
+moriRichObsZWA <- observed_richness(block_data = moriBlocks,
+                                 chromosome_groups = morizwa)
+
+```
+
+
+
+```{r}
+kbl(moriRichObs, caption = "B. mori repeat richness by chromosome") |>  
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                font_size = 9, fixed_thead = T) |>
+  scroll_box(width = "100%", height = "400px")
+
+kbl(moriRichObsZWA, caption = "B. mori richness fraction by ZWA") |>  
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                font_size = 9, fixed_thead = T) |>
+  scroll_box(width = "100%")
+```
+
+
+
+#### mandarina
+```{r}
+
+mandRichObs <- observed_richness(block_data = mandBlocks)
+
+
+mandRichObsZWA <- observed_richness(block_data = mandBlocks,
+                                 chromosome_groups = mandzwa)
+
+```
+
+
+```{r}
+kbl(mandRichObs, caption = "B. mandarina repeat richness by chromosome") |>  
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                font_size = 9, fixed_thead = T) |>
+  scroll_box(width = "100%", height = "400px")
+
+kbl(mandRichObsZWA, caption = "B. mandarina richness fraction by ZWA") |>  
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                font_size = 9, fixed_thead = T) |>
+  scroll_box(width = "100%")
+```
+
+
+#### merge
+
+```{r}
+comboRichObs <- rbind(moriRichObs, mandRichObs)
+comboRichObsZWA <- rbind(moriRichObsZWA, mandRichObsZWA)
+
+
+write.csv(comboRichObs,    file = "results_bs/RichnessObservedCHR.csv")
+write.csv(comboRichObsZWA, file = "results_bs/RichnessObservedZWA.csv")
+
+```
+
+
+
+## Basic Plots
+
+
+
+### Percent repeat by Chromosome
+```{r}
+ggplot(data = observedChr, aes(x = group, y = repeat_percent)) +
+  geom_bar( stat = "identity", fill = "blue") +
+  facet_grid( rows = "assembly") + theme_bw() +
+  xlab("Chromosome") + ylab("Percent Repeat") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+### Fraction repeat by ZWA
+
+```{r}
+ggplot(data = observedZWA, aes(x = group, y = repeat_percent)) +
+  geom_bar( stat = "identity", fill = "green4") +
+  facet_wrap( ~ assembly) + theme_bw() 
+
+```
+
+
+```{r}
+moriBlocks$block_family <- moriBlocks$block_family |>
+  dplyr::mutate(
+    zwa = dplyr::case_when(
+      chromosome == "ChrW" ~ "W",
+      chromosome == "Chr1" ~ "Z",
+      TRUE ~ "A"
+    ),
+    zwa = factor(zwa, levels = c("W", "A", "Z"))
+  )
+
+
+mandBlocks$block_family <- mandBlocks$block_family |>
+  dplyr::mutate(
+    zwa = dplyr::case_when(
+      chromosome == "ChrW" ~ "W",
+      chromosome == "Chr1" ~ "Z",
+      TRUE ~ "A"
+    ),
+    zwa = factor(zwa, levels = c("W", "A", "Z"))
+  )
+
+family <- rbind(moriBlocks$block_family, mandBlocks$block_family)
+```
+
+
+
+```{r}
+repclasslevels <- c("Satellite",  "Helitron" , "DNA", "SINE", "LINE", "tRNA", 
+                    "Penelope","LTR" ,  "Unknown", "snRNA" )
+
+## Repeat bp by chromosome type and repeat class
+class_bp <- family |>
+  dplyr::group_by(assembly, zwa, repeat_class) |>
+  dplyr::summarize(
+    repeat_bp = sum(overlap_bp),
+    .groups = "drop"
+  ) |> 
+  dplyr::mutate(repeat_class = factor(repeat_class, levels = repclasslevels))
+
+## Total physical sequence represented by each chromosome type
+chr_bp <- observedZWA |>
+  dplyr::group_by(assembly, group) |>
+  dplyr::summarize(
+    chromosome_bp = sum(block_bp),
+    .groups = "drop"
+  ) |> 
+  dplyr::rename( zwa = group)
+
+## Combine numerator and denominator
+bmRepeatClass <- class_bp |>
+  dplyr::left_join(chr_bp, by = c("assembly", "zwa")) |>
+  dplyr::mutate(Taxon = ifelse (assembly == "p50T", "mori", "mandarina")) |> 
+  dplyr::mutate(
+    repeat_fraction = repeat_bp / chromosome_bp,
+    repeat_percent  = 100 * repeat_fraction
+  ) |> 
+  dplyr::filter(repeat_class != "snRNA" & repeat_class  != "tRNA") |> 
+  dplyr::mutate(repeat_class = relevel(factor(repeat_class) , "Satellite",  "Helitron" , "DNA", "SINE",  "LINE", "Penelope","LTR" ,  "Unknown"))
+  
+```
+
+```{r}
+Repeat_colors <- c(
+  Satellite = "#88CCEE",
+  Helitron = "#117733",
+  DNA = "#332288",
+  SINE = "#AA4499",
+  LINE = "#999933",
+  Penelope = "#6699CC",
+  LTR =  "#661100",
+  Unknown = "#888888"
+)
+```
+
+
+
+```{r}
+plotRepeatTypes <- ggplot(
+  bmRepeatClass,
+  aes(
+    x = Taxon,
+    y = repeat_percent,
+    fill = repeat_class
+  )
+) +
+  geom_col() +
+  labs(
+    x = "",
+    y = "Chromosome %",
+    fill = "Repeat class"
+  ) +
+  scale_fill_manual (values = Repeat_colors) +
+  theme_cowplot() +
+  theme(legend.title = element_blank()) +
+  theme (axis.text.x = element_text(angle = 270, vjust = 0.5, hjust =0)) +
+  theme (axis.text.x = element_text(face = "italic")) + 
+  facet_wrap(~zwa) 
+
+
+plot(plotRepeatTypes)
+```
+
+### Richness by chromosome
+
+
+```{r}
+zwalevel <-  c( "A", "Z", "W" )
+
+moriRichObs<- moriRichObs |>
+  dplyr::mutate(
+    zwa = dplyr::case_when(
+      group == "ChrW" ~ "W",
+      group == "Chr1" ~ "Z",
+      TRUE ~ "A"
+    ),
+    zwa = factor(zwa, levels = zwalevel)
+  )
+
+mandRichObs<- mandRichObs |>
+  dplyr::mutate(
+    zwa = dplyr::case_when(
+      group == "ChrW" ~ "W",
+      group == "Chr1" ~ "Z",
+      TRUE ~ "A"
+    ),
+    zwa = factor(zwa, levels = zwalevel)
+  )
+
+comboRichObs <- rbind(moriRichObs, mandRichObs) |>
+  dplyr::mutate(Taxon = ifelse (assembly == "p50T", "mori", "mandarina"))  
+
+#zwacols <- c("green4","blue", "red")
+zwacols <- c("#1E88E5", "#005447",   "#D81B60" )
+
+# order to address overplotting of points
+plotRichness <- ggplot(data = comboRichObs[order(comboRichObs$zwa),], 
+       aes(x = repeat_bp/1e6, y = richness, col = zwa)) +
+  geom_point(alpha = 0.8) + scale_color_manual (values = zwacols) +
+  theme_cowplot(12) +
+  theme(strip.text = element_text(face = "italic")) +
+  labs(x = "Cumulative Length of Repeats (Mbp)",
+       y = "# Repeat Families",
+       col = "Chromosome" ) + 
+  facet_wrap( ~ Taxon) 
+
+plot(plotRichness)
+```
+
+
+
+# Bootstrapping
+
+We can use the dedicated boostrapping function to do resampling of the genomic blocks for each chromosome. The `blocks` structure means each chromosome has **N** blocks, each of the roughly the same target window size (e.g. 100 Kbp). For each bootstrap, we resample with replacement each chromosome for **N** blocks, effectively recreating a genome's worth of data in each round of sampling.
+
+```{r}
+moriBoot <- bootstrap_block_draws(
+  moriBlocks,
+  n_boot = 5000,  
+  seed = 1234
+)
+
+mandBoot <- bootstrap_block_draws(
+  mandBlocks,
+  n_boot = 5000,
+  seed = 5678
+)
+```
+
+
+## Repeat Fractions
+Once we have the draws of sampled windows, we can use these to generate values per chromosome, or groupings of chromosomes, for instance `ZWA`.
+
+### mori
+
+```{r}
+moriFrac <- bootstrap_fraction(block_data = moriBlocks, 
+                               bootstrap_draws = moriBoot)
+
+
+moriFracZWA <- bootstrap_fraction(block_data = moriBlocks, 
+                                  bootstrap_draws = moriBoot,
+                                  chromosome_groups = morizwa)
+```
+
+
+### mandarina
+
+
+```{r}
+
+mandFrac <- bootstrap_fraction(block_data = mandBlocks, 
+                               bootstrap_draws = mandBoot)
+
+
+mandFracZWA <- bootstrap_fraction(block_data = mandBlocks, 
+                                  bootstrap_draws = mandBoot,
+                                  chromosome_groups = mandzwa)
+```
+
+
+## Repeat Richness
+
+We can do the same thing for richness, generating values for bootstrapped replicates of richness by chromosome, or groupings of chromosomes.  In this case, we use the Horvitz-Thompson correction for unequal probability sampling, since bootstrap samples of a chromosome will likely be less than the whole chromosome, and never greater. 
+
+###  mori
+
+```{r}
+moriRich <- bootstrap_richness(block_data = moriBlocks, 
+                               bootstrap_draws = moriBoot)
+
+#ZWA is not needed for richness in our analysis, 
+# but it can be done by the function...
+moriRichZWA <- bootstrap_richness(block_data = moriBlocks, 
+                                  bootstrap_draws = moriBoot,
+                                  chromosome_groups = morizwa)
+
+
+```
+
+
+###  mandarina
+
+```{r}
+mandRich <- bootstrap_richness(block_data = mandBlocks, 
+                               bootstrap_draws = mandBoot)
+
+#ZWA is not needed for richness in our analysis, 
+# but it can be done by the function...
+mandRichZWA <- bootstrap_richness(block_data = mandBlocks, 
+                                  bootstrap_draws = mandBoot,
+                                  chromosome_groups = mandzwa)
+
+
+```
+
+
+
+# Confidence intervals
+
+With the bootstrapped samples calculated, we can use these values to generate CIs .
+
+## Repeat Fraction
+
+### By Chromosome
+
+```{r}
+moriFracCI <- bootstrap_ci(bootstrap_data = moriFrac, 
+                           value = "repeat_fraction",
+                           observed = moriFracObs)
+
+
+mandFracCI <- bootstrap_ci(bootstrap_data = mandFrac, 
+                           value = "repeat_fraction",
+                           observed = mandFracObs)
+
+
+observedChrCI <- rbind(moriFracCI, mandFracCI)  |>
+  dplyr::mutate(Taxon = ifelse (assembly == "p50T", "mori", "mandarina"))
+
+write.csv(observedChrCI,    file = "results_bs/FractionObsCI-CHR.csv", row.names = F)
+```
+
+
+```{r}
+
+kbl(observedChrCI, caption = "Repeat Fraction CIs by Chromosome") |>  
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                fixed_thead = T) |>
+  scroll_box(width = "100%", height = "400px")
+```
+
+
+
+
+
+#### Plot Fraction by Chromosome
+
+
+```{r}
+plotFracByChromCI <- ggplot(data = observedChrCI, aes(x = group, y = observed * 100)) +
+  geom_bar( stat = "identity", fill = "skyblue") +
+  geom_linerange( aes(x=group, ymin=ci_lower*100, ymax=ci_upper*100)) +
+  xlab("Chromosome") + ylab("% Chromosome") +
+  facet_grid( "Taxon" ) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+plot(plotFracByChromCI)
+
+ggsave(plot = plotFracByChromCI, 
+       filename = "results_bs/FractionByChromCI.jpg", 
+      device = ragg::agg_tiff,
+      width  = 300, height = 180, units = "mm",
+      res    = 300,
+      compression = "lzw",
+      bg = "white",
+      scale = .8)
+
+```
+
+### By ZWA
+
+Let's do the same thing for the ZWA partitions
+```{r}
+
+moriFracZWACI <- bootstrap_ci(bootstrap_data = moriFracZWA, 
+                           value = "repeat_fraction",
+                           observed = moriFracObsZWA)
+
+mandFracZWACI <- bootstrap_ci(bootstrap_data = mandFracZWA, 
+                           value = "repeat_fraction",
+                           observed = mandFracObsZWA)
+
+obsFracZWACI <- rbind(moriFracZWACI, mandFracZWACI) |>
+  dplyr::mutate(Taxon = ifelse (assembly == "p50T", "mori", "mandarina")) |> 
+  dplyr::mutate(zwa = factor(group, levels = c("W", "A", "Z")))
+
+
+write.csv(obsFracZWACI, file = "results_bs/FractionObsCI-ZWA.csv", row.names = F)
+```
+
+And we can plot these values with error bars for CIs
+
+
+```{r}
+plotFracByZWACI <- ggplot(data = obsFracZWACI, 
+                          aes(x = zwa, y = observed)) +
+  geom_bar( stat = "identity", fill = "skyblue") +
+  geom_linerange( aes(x=group, ymin=ci_lower, ymax=ci_upper)) +
+  xlab("Chromosome") + ylab("% Chromosome") +
+  facet_wrap( ~ Taxon ) +
+  theme_bw() 
+
+plotFracByZWACI
+
+ggsave(plot = plotFracByZWACI, 
+       filename = "results_bs/FractionByZWACI.jpg", 
+      device = ragg::agg_tiff,
+      width  = 200, height = 120, units = "mm",
+      res    = 300,
+      compression = "lzw",
+      bg = "white",
+      scale = .8)
+
+```
+
+## Repeat Richness
+
+### By Chromosome
+
+```{r}
+moriRichCI <- bootstrap_ci(bootstrap_data = moriRich, 
+                           value = "richness_corrected",
+                           observed = moriRichObs,
+                           observed_value = "richness")
+
+mandRichCI <- bootstrap_ci(bootstrap_data = mandRich, 
+                           value = "richness_corrected",
+                           observed = mandRichObs,
+                           observed_value = "richness")
+
+
+```
+
+Modify richness CIs for plotting
+
+```{r}
+
+comboRichCI <- rbind(moriRichCI, mandRichCI) |>
+  dplyr::mutate(
+    zwa = dplyr::case_when(
+      group == "ChrW" ~ "W",
+      group == "Chr1" ~ "Z",
+      TRUE ~ "A"
+    ),
+    zwa = factor(zwa, levels = c("A", "Z", "W"))
+  ) |> 
+  dplyr::arrange(zwa)
+
+write.csv(x = comboRichCI, file = "results_bs/RichnessObsCHR-CI.csv", row.names = F)
+```
+
+
+
+```{r}
+
+plotRichCI <- ggplot(data = comboRichObs[order(comboRichObs$zwa),], 
+       aes(x = repeat_bp/1e6, y = richness, col = zwa)) +
+  geom_point() + scale_color_manual (values = zwacols) +
+  geom_linerange( aes(x=repeat_bp/1e6, ymin=comboRichCI$ci_lower, 
+                      ymax=comboRichCI$ci_upper), linewidth = 0.3) +
+  theme_cowplot(12) +
+  theme(strip.text = element_text(face = "italic")) +
+  labs(x = "Cumulative Length of Repeats (Mbp)",
+       y = "# Repeat Families",
+       col = "Chromosome" ) + 
+  facet_wrap( ~ Taxon)   
+
+
+plotRichCI
+```
+
+# Shared repeat content
+
+## Observed similarity metrics
+
+Get counts and similarity measures of repeats shared between assemblies, by chromosome
+```{r}
+sharedObs <- observed_shared(moriBlocks, mandBlocks)
+
+
+kbl(sharedObs, caption = "Observed shared repeats") |>  
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                fixed_thead = T) |>
+  scroll_box(width = "100%", height = "400px")
+
+
+write.csv(x = sharedObs, file = "SharedRepeatsObserved.csv", row.names = F)
+```
+
+
+Examine correlation between Jaccard and Bray-Curtis.
+
+```{r}
+
+zwacols <- c("green4","blue", "red")
+plot(sharedObs$bray_curtis_similarity ~ sharedObs$jaccard,
+     col = zwacols[c(2,rep(1,25),3)], pch = 19)
+legend("topleft", col = zwacols, pch = 19, legend = c("A", "Z", "W"))
+```
+
+
+## Bootstrap similarity metrics
+
+Here we use the bootstrapped observations to calculate the shared repeats. We ignore the 'fused' chromosome between the two taxa, but calculate values for all others.
+
+Since each bootstrap sample was done independently for each taxa, we can then just use each "pair" to calculate the overlap. This is what the `bootstrap_shared()` function does
+
+```{r}
+sharedBoot <- bootstrap_shared( block_data_1 = moriBlocks, 
+                                block_data_2 = mandBlocks,
+                                bootstrap_draws_1 = moriBoot,
+                                bootstrap_draws_2 = mandBoot)
+
+```
+
+With the bootstrapped similarity observations, we can plot the full distribution of bootstrapped values, and overlay the observed values as points. 
+```{r, fig.height=6, fig.width=12}
+
+pointSize <- 0.5
+
+plotJaccardViol <- ggplot(sharedBoot, aes(x = chromosome, y = jaccard_corrected)) +
+  geom_violin(fill = "dodgerblue") +
+  geom_point(data = sharedObs, aes(x = chromosome, y = jaccard), size = pointSize) +
+  ylab("Jaccard Similarity") + xlab("Chromosome") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+plotSharedRepsViol <- ggplot(sharedBoot, aes(x = chromosome, y = shared_corrected)) +
+  geom_violin(fill = "gold") +
+  geom_point(data = sharedObs, aes(x = chromosome, y = shared), size = pointSize) +
+  ylab("Shared Repeats") + xlab("Chromosome") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+
+plotBrayViol <- ggplot(sharedBoot, aes(x = chromosome, y = bray_curtis_similarity)) +
+  geom_violin(fill = "green3") +
+  geom_point(data = sharedObs, aes(x = chromosome, y = bray_curtis_similarity), size = pointSize) +
+  ylab("Bray-Curtis Similarity") + xlab("Chromosome") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+plotJaccardViol + plotSharedRepsViol + plotBrayViol
+
+
+
+ggsave(plot = plotJaccardViol, 
+       filename = "results_bs/JaccardByChromViol.jpg", 
+      device = ragg::agg_tiff,
+      width  = 180, height = 90, units = "mm",
+      res    = 300,
+      compression = "lzw",
+      bg = "white",
+      scale = .8)
+
+```
+
+Bray Curtis shows a consistent bias in the bootstraps (slightly less for W) for all chromosomes. This appears to be an issue with sampling in the bootstrap.
+
+```{r}
+bc_diag <- aggregate(
+  bray_curtis_similarity ~ chromosome,
+  data = sharedBoot,
+  FUN = mean
+)
+
+names(bc_diag)[2] <- "bootstrap_mean"
+
+bc_diag <- merge(
+  bc_diag,
+  sharedObs[, c("chromosome", "bray_curtis_similarity")],
+  by = "chromosome"
+)
+
+bc_diag$bias <- 
+  bc_diag$bootstrap_mean -
+  bc_diag$bray_curtis_similarity
+
+bc_diag
+```
+
+And we can get 95% CIs based on the bootstrapped values
+```{r}
+
+
+jaccard_ci <- sharedBoot |>
+  dplyr::group_by(chromosome) |>
+  dplyr::summarise(
+    n_boot = dplyr::n(),
+    bootstrap_mean = mean(jaccard_corrected),
+    bootstrap_median = median(jaccard_corrected),
+    bootstrap_sd = sd(jaccard_corrected),
+    ci_lower = quantile(jaccard_corrected, 0.025),
+    ci_upper = quantile(jaccard_corrected, 0.975),
+    .groups = "drop"
+  )
+
+
+## table to report Jaccard index with CIs
+jaccard_out <- sharedObs |> dplyr::select("chromosome", 
+  dplyr::contains("assembly"), dplyr::contains("jaccard")) |> 
+  dplyr::full_join( jaccard_ci, by="chromosome")
+
+
+write.csv(jaccard_out, file = "results_BS/Jaccard.csv", row.names = F)
+```
+
+
+```{r}
+ggplot(data = sharedObs, aes(x = chromosome, y = jaccard) ) +
+  geom_point() +
+  geom_linerange(aes(x = chromosome,
+                     ymin=jaccard_ci$ci_lower, 
+                     ymax=jaccard_ci$ci_upper)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+We can get the 95% CI for the difference between the W and the median homosome values.
+```{r}
+W_contrast <- sharedBoot |>
+  dplyr::group_by(replicate) |>
+  dplyr::summarise(
+    W = jaccard_corrected[chromosome == "ChrW"],
+    nonW_median = median(
+      jaccard_corrected[chromosome != "ChrW"]
+    ),
+    difference = W - nonW_median,
+    .groups = "drop"
+  )
+
+quantile(
+  W_contrast$difference,
+  c(0.025, 0.5, 0.975)
+)
+```
+
+
+So the W has a Jaccard similarity approximately 0.25 lower than the median of the other chromosomes (95% bootstrap CI ...).
