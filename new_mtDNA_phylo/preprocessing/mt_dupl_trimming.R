@@ -4,7 +4,7 @@ library(tidyverse)
 setwd("D:/work/Bmori/mitochondria/")
 
 
-mt <- readDNAStringSet("./Bombyx_mt_assemblies.fasta")
+mt <- readDNAStringSet("./input_data/Bombyx_mtDNA_new.fasta")
 
 
 #duplicate sequence and restore sequence names
@@ -14,7 +14,6 @@ names(mt_dupl) <- names(mt)
 
 #paterns to cut the sequence
 pattern <- "ATGAAATAGGTAAATATCTTTTTCAAGCTAAATA"
-Rpattern <- "TATTAACTTATCATAACGATAACGAGGTAAAGTA"
 huttoni_pattern <- "aagaaataggtaaatatctttttcaagataaata"
 
 mt_dupl_rc <- reverseComplement(mt_dupl)
@@ -40,7 +39,7 @@ trimmed <- c(
   trim_by_pattern(mt_dupl_rc, pattern)
 )
 
-writeXStringSet(trimmed, filepath = "./Bombyx_mt_assemblies_trimmed.fasta", format = "fasta")
+writeXStringSet(trimmed, filepath = "./Bombyx_mtDNA_new_trimmed.fasta", format = "fasta")
 
 
 
