@@ -1,0 +1,71 @@
+---
+title: "Bmbyx mitochondria tree new"
+output: html_document
+date: "2026-10-20"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+knitr::opts_knit$set(root.dir = "D:/work/Bmori/mitochondria/new_mtDNA_phylo/figures/")
+```
+
+```{r libraries}
+library (ape)
+library (ggtree)
+library (tidyverse)
+
+```
+
+```{r input}
+
+tree <- read.tree("../phylo/Bombyx_mtDNA_new.treefile")
+tree <- root(tree, outgroup = "NC_026518.1", resolve.root = TRUE, edgelabel = TRUE)
+
+spec <- read_tsv("../input_data/Bombyx_new_mtDNA_spcies.tsv")
+colnames(spec) <- c("label", "species")
+
+spec_colors <- c(
+  huttoni = "black",
+  mandarina = "#6699CC",
+  mori =  "#999933",
+  p50T = "#117733",
+  p50ma = "#AA4499"
+)
+
+```
+
+```{r plot}
+
+p <- ggtree(tree, branch.length = "none") %<+% spec 
+
+p$data <- p$data %>%
+  mutate(
+    boot   = ifelse(isTip, NA, suppressWarnings(as.numeric(sub(".*/", "", label)))),
+    supported = !isTip & boot >= 80
+  )
+
+p <- p +
+  geom_tippoint(aes(color = species), size = 1) +
+  geom_nodelab(aes(subset = supported, label = boot), size = 2, hjust = 1.15, vjust = -0.4) +
+  theme(legend.position = "bottom") +
+  guides(color=guide_legend(nrow = 2, byrow = TRUE)) +
+  theme(legend.text = element_text(face="italic"), legend.title = element_blank()) +
+  scale_color_manual(values = spec_colors)
+
+p
+
+
+```
+
+
+```{r output}
+
+ggsave(
+  "Mt_phylo_new.tiff",
+  plot   =p,
+  device = ragg::agg_tiff,
+  width  = 85, height = 160, units = "mm",
+  res    = 300,
+  compression = "lzw" 
+)
+```
