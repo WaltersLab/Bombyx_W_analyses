@@ -46,7 +46,7 @@ p$data <- p$data %>%
     supported = !isTip & boot >= 80
   )
 
-p <- p +
+pmart <- p +
   geom_tippoint(aes(color = species), size = 1) +
   geom_nodelab(aes(subset = supported, label = boot), size = 2, hjust = 1.3, vjust = -0.4) +
   theme(legend.position = "bottom") +
@@ -54,17 +54,17 @@ p <- p +
   theme(legend.text = element_text(face="italic"), legend.title = element_blank()) +
   scale_color_manual(values = spec_colors)
 
-p
+pmart
 
 
 ```
 
 
-```{r output, eval = F}
+```{r output, eval = T}
 
 ggsave(
   "Mt_phylo_new.tiff",
-  plot   =p,
+  plot   =pmart,
   device = ragg::agg_tiff,
   width  = 85, height = 160, units = "mm",
   res    = 300,
@@ -94,6 +94,9 @@ spec_shapes <- c(
 ```
 
 
+p50T = blue triangle
+
+p50ma = orange square
 
 ```{r}
 pnow <- p +
@@ -103,6 +106,12 @@ pnow <- p +
     size = 1.8,
     stroke = 0.3
   ) +
+ geom_nodelab(
+   aes(subset = supported, label = boot), 
+   size = 2, 
+   hjust = 1.3, 
+   vjust = -0.4
+  ) +
   scale_fill_manual(values = spec_fills) +
   scale_shape_manual(values = spec_shapes) +
   guides(
@@ -110,13 +119,10 @@ pnow <- p +
       nrow = 2,
       byrow = TRUE,
       override.aes = list(
-        shape = unname(spec_shapes[names(spec_fills)]),
-        color = "black",
         size = 3,
         stroke = 0.5
       )
-    ),
-    shape = "none"
+    )
   ) +
   theme(
     legend.position = "bottom",
@@ -131,7 +137,7 @@ plot(pnow)
 
 
 
-```{r output}
+```{r newplot}
 
 ggsave(
   "Mt_phylo_revised.tiff",
@@ -142,3 +148,6 @@ ggsave(
   compression = "lzw" 
 )
 ```
+
+
+
