@@ -4,9 +4,10 @@ output: html_document
 date: "2026-10-20"
 ---
 
+# Libraries
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
-knitr::opts_knit$set(root.dir = "D:/work/Bmori/mitochondria/new_mtDNA_phylo/figures/")
+#knitr::opts_knit$set(root.dir = "D:/work/Bmori/mitochondria/new_mtDNA_phylo/figures/")
 ```
 
 ```{r libraries}
@@ -16,6 +17,7 @@ library (tidyverse)
 
 ```
 
+# Input
 ```{r input}
 
 tree <- read.tree("../phylo/Bombyx_mtDNA_new.treefile")
@@ -33,7 +35,7 @@ spec_colors <- c(
 )
 
 ```
-
+# Initial Plotting
 ```{r plot}
 
 p <- ggtree(tree, branch.length = "none") %<+% spec 
@@ -46,7 +48,7 @@ p$data <- p$data %>%
 
 p <- p +
   geom_tippoint(aes(color = species), size = 1) +
-  geom_nodelab(aes(subset = supported, label = boot), size = 2, hjust = 1.15, vjust = -0.4) +
+  geom_nodelab(aes(subset = supported, label = boot), size = 2, hjust = 1.3, vjust = -0.4) +
   theme(legend.position = "bottom") +
   guides(color=guide_legend(nrow = 2, byrow = TRUE)) +
   theme(legend.text = element_text(face="italic"), legend.title = element_blank()) +
@@ -58,11 +60,82 @@ p
 ```
 
 
-```{r output}
+```{r output, eval = F}
 
 ggsave(
   "Mt_phylo_new.tiff",
   plot   =p,
+  device = ragg::agg_tiff,
+  width  = 85, height = 160, units = "mm",
+  res    = 300,
+  compression = "lzw" 
+)
+```
+
+# Revised Plotting
+
+```{r}
+spec_fills <- c(
+  huttoni   = "black",
+  mandarina = "#AAAAAA",
+  mori      = "white",
+  p50T      = "#0072B2",
+  p50ma     = "#D55E00"
+)
+
+spec_shapes <- c(
+  huttoni   = 21,  # circle
+  mandarina = 21,  # circle
+  mori      = 21,  # circle
+  p50T      = 24,  # triangle
+  p50ma     = 22   # square
+)
+
+```
+
+
+
+```{r}
+pnow <- p +
+  geom_tippoint(
+    aes(fill = species, shape = species),
+    color = "black",
+    size = 1.8,
+    stroke = 0.3
+  ) +
+  scale_fill_manual(values = spec_fills) +
+  scale_shape_manual(values = spec_shapes) +
+  guides(
+    fill = guide_legend(
+      nrow = 2,
+      byrow = TRUE,
+      override.aes = list(
+        shape = unname(spec_shapes[names(spec_fills)]),
+        color = "black",
+        size = 3,
+        stroke = 0.5
+      )
+    ),
+    shape = "none"
+  ) +
+  theme(
+    legend.position = "bottom",
+    legend.text = element_text(face = "italic"),
+    legend.title = element_blank()
+  )
+```
+
+```{r, fig.height=7, fig.width=3}
+plot(pnow)
+```
+
+
+
+```{r output}
+
+ggsave(
+  "Mt_phylo_revised.tiff",
+  plot   =pnow,
   device = ragg::agg_tiff,
   width  = 85, height = 160, units = "mm",
   res    = 300,
